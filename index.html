@@ -731,12 +731,11 @@
     </div>
   </nav>
 
-  <!-- ================= ADMOB NATIVE INTEGRATION ENGINE (TEST ADS) ================= -->
+  <!-- ================= ADMOB NATIVE INTEGRATION ENGINE ================= -->
   <script>
     const AdConfig = {
-      // Google Official Test Ad Unit IDs
-      bannerId: 'ca-app-pub-3940256099942544/6300978111',
-      rewardedId: 'ca-app-pub-3940256099942544/5224354917',
+      bannerId: 'ca-app-pub-6302105448775587/9146645040',
+      rewardedId: 'ca-app-pub-6302105448775587/2277984366',
       isRewardedLoaded: false
     };
 
@@ -747,9 +746,9 @@
             const { AdMob } = window.Capacitor.Plugins;
             await AdMob.initialize({
               testingDevices: [],
-              initializeForTesting: true
+              initializeForTesting: false
             });
-            console.log('AdMob Initialized with Test Ads');
+            console.log('AdMob Initialized');
             this.showBanner();
             this.preloadRewarded();
           } catch (e) {
@@ -767,7 +766,7 @@
               adSize: BannerAdSize ? BannerAdSize.BANNER : 'BANNER',
               position: BannerAdPosition ? BannerAdPosition.BOTTOM_CENTER : 'BOTTOM_CENTER',
               margin: 60,
-              isTesting: true
+              isTesting: false
             });
           } catch (e) {
             console.warn('Banner Load Error:', e);
@@ -781,7 +780,7 @@
             const { AdMob } = window.Capacitor.Plugins;
             await AdMob.prepareRewardVideoAd({
               adId: AdConfig.rewardedId,
-              isTesting: true
+              isTesting: false
             });
             AdConfig.isRewardedLoaded = true;
           } catch (e) {
@@ -816,7 +815,7 @@
             console.warn('Failed to show rewarded ad, granting reward directly:', e);
           }
         }
-        // Web browser testing fallback
+        // Fallback agar web browser me test kar rahe hon
         if (typeof onRewardCallback === 'function') {
           onRewardCallback();
         }
@@ -1123,7 +1122,7 @@
         { sign: 'ि', name: 'इ की मात्रा (छोटी)', example: 'किताब', icon: '📖', formula: 'क + ि = कि' },
         { sign: 'ी', name: 'ई की मात्रा (बड़ी)', example: 'कील', icon: '🪛', formula: 'क + ी = की' },
         { sign: 'ु', name: 'उ की मात्रा (छोटा)', example: 'गुलाब', icon: '🌹', formula: 'क + ु = कु' },
-        { sign: 'ू', name: 'ऊ की मात्रा (बड़ा)', example: 'सूरज', icon: '☀', formula: 'क + ू = कू' },
+        { sign: 'ू', name: 'ऊ की मात्रा (बड़ा)', example: 'सूरज', icon: '☀️️', formula: 'क + ू = कू' },
         { sign: 'ृ', name: 'ऋ की मात्रा', example: 'वृक्ष', icon: '🌳', formula: 'क + ृ = कृ' },
         { sign: 'े', name: 'ए की मात्रा', example: 'केला', icon: '🍌', formula: 'क + े = के' },
         { sign: 'ै', name: 'ऐ की मात्रा', example: 'पैर', icon: '🦶', formula: 'क + ै = कै' },
@@ -2054,7 +2053,7 @@
       initWelcomeProgress();
       goToHomeScreen();
 
-      // Initialize Native AdMob Test Ads on app launch
+      // Initialize Native AdMob on app launch
       setTimeout(() => {
         AdService.init();
       }, 1000);
