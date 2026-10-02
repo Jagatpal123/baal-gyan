@@ -1,0 +1,10 @@
+{
+  "appId": "com.jagatpal.balgyanultra",
+  "appName": "Bal Gyan Ultra",
+  "webDir": "dist",
+  "plugins": {
+    "AdMob": {
+      "appId": "ca-app-pub-6302105448775587~3000039098"
+    }
+  }
+}
