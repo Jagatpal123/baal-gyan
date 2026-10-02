@@ -34,19 +34,27 @@ jobs:
         npx cap add android
         npx cap sync android
 
-    - name: Configure App Icon, SDK 36, Min SDK 24 & AdMob App ID
+    - name: Configure SDK 36, App Icons & Suppress Warning
       run: |
         # 1. SDK Settings
         sed -i 's/minSdkVersion = .*/minSdkVersion = 24/' android/variables.gradle
         sed -i 's/compileSdkVersion = .*/compileSdkVersion = 36/' android/variables.gradle
         sed -i 's/targetSdkVersion = .*/targetSdkVersion = 36/' android/variables.gradle
 
+        # Suppress compileSdk 36 warning
+        echo "android.suppressUnsupportedCompileSdk=36" >> android/gradle.properties
+
         sed -i 's/versionCode 1/versionCode 1/g' android/app/build.gradle
         sed -i 's/versionName "1.0"/versionName "1.0.0"/g' android/app/build.gradle
 
-        # 2. Inject App Icon to Android Mipmap Folders
+        # 2. Inject App Icon safely (Only DPI folders, remove XML duplicates)
         if [ -f "logo.png" ]; then
-          for dir in android/app/src/main/res/mipmap-*; do
+          # anydpi-v26 XML files hatao taaki duplicate error na aaye
+          rm -rf android/app/src/main/res/mipmap-anydpi-v26
+          
+          # Sabhi normal dpi folders me icon copy karo
+          for dir in android/app/src/main/res/mipmap-hdpi android/app/src/main/res/mipmap-mdpi android/app/src/main/res/mipmap-xhdpi android/app/src/main/res/mipmap-xxhdpi android/app/src/main/res/mipmap-xxxhdpi; do
+            mkdir -p "$dir"
             cp logo.png "$dir/ic_launcher.png"
             cp logo.png "$dir/ic_launcher_round.png"
             cp logo.png "$dir/ic_launcher_foreground.png" 2>/dev/null || true
@@ -56,8 +64,8 @@ jobs:
         # 3. AdMob App ID Injection
         sed -i '/<\/application>/i \        <meta-data android:name="com.google.android.gms.ads.APPLICATION_ID" android:value="ca-app-pub-6302105448775587~3000039098"\/>' android/app/src/main/AndroidManifest.xml
 
-    # --- STEP A: TEST AD WALI APK BANANA (ZIPALIGN + APKSIGNER V2/V3) ---
-    - name: Prepare, Build and Properly Sign Test-Ad APK
+    # --- STEP A: TEST AD WALI APK BANANA (ZIPALIGN + APKSIGNER) ---
+    - name: Prepare, Build and Sign Test-Ad APK
       run: |
         # Inject Google Official Test Ads into HTML for APK
         sed -i 's/ca-app-pub-6302105448775587\/9146645040/ca-app-pub-3940256099942544\/6300978111/g' android/app/src/main/assets/public/index.html
@@ -68,17 +76,16 @@ jobs:
         chmod +x gradlew
         ./gradlew assembleRelease
 
-        # Find Android Build Tools (zipalign & apksigner)
         BUILD_TOOLS_DIR=$(ls -d $ANDROID_HOME/build-tools/* | tail -1)
 
-        # Zipalign the APK
+        # Zipalign APK
         $BUILD_TOOLS_DIR/zipalign -v -p 4 app/build/outputs/apk/release/app-release-unsigned.apk app/build/outputs/apk/release/app-aligned.apk
 
-        # Sign APK with apksigner (Full v2/v3 support for seamless install)
+        # Apksigner v2/v3 sign
         $BUILD_TOOLS_DIR/apksigner sign --ks ../release.keystore --ks-key-alias bhakti --ks-pass pass:Jagatpal@2026 --key-pass pass:Jagatpal@2026 --out app/build/outputs/apk/release/BalGyan-TestAds.apk app/build/outputs/apk/release/app-aligned.apk
 
     # --- STEP B: REAL AD WALI AAB BANANA (FOR PLAY STORE) ---
-    - name: Prepare and Build Production Real-Ad AAB
+    - name: Prepare, Build and Sign Production AAB
       run: |
         # Restore Real Ads in HTML for AAB
         sed -i 's/ca-app-pub-3940256099942544\/6300978111/ca-app-pub-6302105448775587\/9146645040/g' android/app/src/main/assets/public/index.html
@@ -88,7 +95,7 @@ jobs:
         cd android
         ./gradlew bundleRelease
 
-        # Sign Production AAB with jarsigner
+        # Sign Production AAB
         jarsigner -verbose -sigalg SHA256withRSA -digestalg SHA-256 -keystore ../release.keystore -storepass Jagatpal@2026 -keypass Jagatpal@2026 app/build/outputs/bundle/release/app-release.aab bhakti
 
     # --- ARTIFACTS UPLOAD ---
