@@ -34,7 +34,7 @@ jobs:
         npx cap add android || true
         npx cap sync android
 
-    - name: Configure Permissions, WebView Mic & AdMob
+    - name: Configure Permissions, Native Android TTS & AdMob
       run: |
         # 1. SDK Settings
         sed -i 's/minSdkVersion = .*/minSdkVersion = 24/' android/variables.gradle
@@ -63,24 +63,36 @@ jobs:
         # 4. AdMob App ID
         sed -i '/<\/application>/i \        <meta-data android:name="com.google.android.gms.ads.APPLICATION_ID" android:value="ca-app-pub-6302105448775587~3000039098"\/>' android/app/src/main/AndroidManifest.xml
 
-        # 5. Overhaul MainActivity.java to grant WebView Mic & Unblock Audio
+        # 5. Overhaul MainActivity.java to inject Hardware Native Android TTS Bridge
         cat << 'EOF' > android/app/src/main/java/com/jagatpal/balgyanultra/MainActivity.java
         package com.jagatpal.balgyanultra;
 
         import android.os.Bundle;
+        import android.webkit.JavascriptInterface;
         import android.webkit.PermissionRequest;
         import android.webkit.WebChromeClient;
         import android.webkit.WebView;
+        import android.speech.tts.TextToSpeech;
         import androidx.core.app.ActivityCompat;
         import androidx.core.content.ContextCompat;
         import android.content.pm.PackageManager;
         import android.Manifest;
+        import java.util.Locale;
         import com.getcapacitor.BridgeActivity;
 
         public class MainActivity extends BridgeActivity {
+            private TextToSpeech tts;
+
             @Override
             public void onCreate(Bundle savedInstanceState) {
                 super.onCreate(savedInstanceState);
+
+                // Hardware TTS Initialization
+                tts = new TextToSpeech(this, status -> {
+                    if (status != TextToSpeech.ERROR) {
+                        tts.setLanguage(new Locale("hi", "IN"));
+                    }
+                });
 
                 if (ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
                     ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.RECORD_AUDIO}, 101);
@@ -88,12 +100,38 @@ jobs:
 
                 WebView webView = getBridge().getWebView();
                 webView.getSettings().setMediaPlaybackRequiresUserGesture(false);
+                webView.getSettings().setJavaScriptEnabled(true);
+
+                // Native Android Speech Bridge
+                webView.addJavascriptInterface(new Object() {
+                    @JavascriptInterface
+                    public void speak(String text, String lang) {
+                        if (tts != null) {
+                            if (lang != null && lang.startsWith("en")) {
+                                tts.setLanguage(Locale.US);
+                            } else {
+                                tts.setLanguage(new Locale("hi", "IN"));
+                            }
+                            tts.speak(text, TextToSpeech.QUEUE_FLUSH, null, "BG_TTS");
+                        }
+                    }
+                }, "AndroidTTS");
+
                 webView.setWebChromeClient(new WebChromeClient() {
                     @Override
                     public void onPermissionRequest(final PermissionRequest request) {
                         runOnUiThread(() -> request.grant(request.getResources()));
                     }
                 });
+            }
+
+            @Override
+            public void onDestroy() {
+                if (tts != null) {
+                    tts.stop();
+                    tts.shutdown();
+                }
+                super.onDestroy();
             }
         }
         EOF
