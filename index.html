@@ -14,26 +14,31 @@
   <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;600;700;800&family=Nunito:wght@400;700;800;900&display=swap" rel="stylesheet">
 
   <style>
-    body {
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+    html, body {
+      background-color: #fef3c7 !important; /* Amber-100 lock prevents white flicker */
       font-family: 'Baloo 2', 'Nunito', sans-serif;
       user-select: none;
       -webkit-user-select: none;
-      -webkit-tap-highlight-color: transparent;
+      touch-action: manipulation;
     }
 
     /* 3D Tactile Buttons */
     .btn-3d {
       position: relative;
-      transition: all 0.08s ease;
+      transition: transform 0.05s ease;
       cursor: pointer;
     }
     .btn-3d:active {
-      transform: translateY(4px);
+      transform: translateY(3px);
     }
 
     .btn-green {
       background-color: #58cc02;
-      box-shadow: 0 5px 0 #46a302;
+      box-shadow: 0 4px 0 #46a302;
       color: white;
     }
     .btn-green:active {
@@ -42,7 +47,7 @@
 
     .btn-blue {
       background-color: #1cb0f6;
-      box-shadow: 0 5px 0 #1899d6;
+      box-shadow: 0 4px 0 #1899d6;
       color: white;
     }
     .btn-blue:active {
@@ -51,7 +56,7 @@
 
     .btn-yellow {
       background-color: #ffc800;
-      box-shadow: 0 5px 0 #e5a500;
+      box-shadow: 0 4px 0 #e5a500;
       color: #4b3800;
     }
     .btn-yellow:active {
@@ -60,7 +65,7 @@
 
     .btn-purple {
       background-color: #a445ee;
-      box-shadow: 0 5px 0 #8533c3;
+      box-shadow: 0 4px 0 #8533c3;
       color: white;
     }
     .btn-purple:active {
@@ -69,7 +74,7 @@
 
     .btn-rose {
       background-color: #ff4b4b;
-      box-shadow: 0 5px 0 #d32f2f;
+      box-shadow: 0 4px 0 #d32f2f;
       color: white;
     }
     .btn-rose:active {
@@ -79,13 +84,13 @@
     .card-3d {
       background: white;
       border: 3px solid #e5e7eb;
-      box-shadow: 0 6px 0 #d1d5db;
+      box-shadow: 0 5px 0 #d1d5db;
       border-radius: 1.25rem;
-      transition: all 0.12s ease;
+      transition: transform 0.08s ease;
     }
     .card-3d:active {
-      transform: translateY(3px);
-      box-shadow: 0 3px 0 #d1d5db;
+      transform: translateY(2px);
+      box-shadow: 0 2px 0 #d1d5db;
     }
 
     .card-pair.selected {
@@ -125,8 +130,8 @@
     }
 
     @keyframes pulseGlow {
-      0%, 100% { transform: scale(1); box-shadow: 0 5px 0 #46a302; }
-      50% { transform: scale(1.03); box-shadow: 0 6px 18px rgba(88, 204, 2, 0.7); }
+      0%, 100% { transform: scale(1); box-shadow: 0 4px 0 #46a302; }
+      50% { transform: scale(1.02); box-shadow: 0 6px 16px rgba(88, 204, 2, 0.7); }
     }
     .pulse-next {
       animation: pulseGlow 0.9s infinite ease-in-out;
@@ -134,25 +139,25 @@
 
     @keyframes floatLogo {
       0%, 100% { transform: translateY(0px) scale(1); }
-      50% { transform: translateY(-10px) scale(1.03); }
+      50% { transform: translateY(-8px) scale(1.02); }
     }
     .animate-float {
       animation: floatLogo 2.5s infinite ease-in-out;
     }
 
     @keyframes fadeInModal {
-      from { opacity: 0; transform: scale(0.95); }
+      from { opacity: 0; transform: scale(0.97); }
       to { opacity: 1; transform: scale(1); }
     }
     .animate-fade-in {
-      animation: fadeInModal 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      animation: fadeInModal 0.25s ease-out forwards;
     }
   </style>
 </head>
 <body class="bg-amber-50 text-slate-800 min-h-screen flex flex-col pb-44 select-none">
 
   <!-- ================= WELCOME SCREEN OVERLAY ================= -->
-  <div id="welcome-screen" class="fixed inset-0 z-50 bg-gradient-to-b from-sky-400 via-teal-400 to-emerald-500 flex flex-col items-center justify-between p-6 transition-all duration-500">
+  <div id="welcome-screen" class="fixed inset-0 z-50 bg-gradient-to-b from-sky-400 via-teal-400 to-emerald-500 flex flex-col items-center justify-between p-6 transition-all duration-300">
     <div class="w-full flex items-center justify-between text-white text-xs font-black">
       <span class="bg-white/20 backdrop-blur-md px-3 py-1 rounded-full border border-white/30">✨ भारत का अपना किड्स ऐप</span>
       <span class="bg-white/20 backdrop-blur-md px-3 py-1 rounded-full border border-white/30">v2.0 Ultra</span>
@@ -168,7 +173,7 @@
       <p class="text-sm font-bold text-emerald-50 mt-1 drop-shadow">अक्षर, मात्राएँ, शब्द व मस्ती से सीखें! 🚀</p>
 
       <div class="w-64 h-3.5 bg-black/20 rounded-full overflow-hidden mt-6 p-0.5 border border-white/30 shadow-inner">
-        <div id="welcome-progress" class="bg-gradient-to-r from-yellow-300 to-amber-400 h-full rounded-full transition-all duration-300 shadow-md" style="width: 10%;"></div>
+        <div id="welcome-progress" class="bg-gradient-to-r from-yellow-300 to-amber-400 h-full rounded-full transition-all duration-200 shadow-md" style="width: 10%;"></div>
       </div>
       <span id="welcome-loading-text" class="text-xs font-black text-white/90 mt-2">लर्निंग हब लोड हो रहा है... 10%</span>
     </div>
@@ -499,7 +504,7 @@
             🗑 रीसेट
           </button>
           
-          <!-- HINT BUTTON (10-MINUTE REWARDED AD TIMING) -->
+          <!-- HINT BUTTON (10-MINUTE REWARDED AD TIMING + FAIL-SAFE) -->
           <button onclick="giveChipHint()" class="btn-3d btn-yellow px-3 py-2.5 rounded-2xl text-xs font-black flex-1 flex items-center justify-center gap-1">
             💡 संकेत (Hint)
           </button>
@@ -794,34 +799,48 @@
         }
       },
 
+      // FAIL-SAFE REWARDED CALL: BUTTON KABHI BHI FREEZE NAHI HOGA
       async showRewarded(onRewardCallback) {
+        let callbackExecuted = false;
+        const safeRun = () => {
+          if (!callbackExecuted && typeof onRewardCallback === 'function') {
+            callbackExecuted = true;
+            onRewardCallback();
+          }
+        };
+
+        // Fallback: Agar Ad 2.5 second me open na ho to user ka button hang mat hone do
+        const fallbackTimer = setTimeout(() => {
+          safeRun();
+        }, 2500);
+
         if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.AdMob) {
           try {
             const { AdMob, RewardAdEvents } = window.Capacitor.Plugins;
             let rewardedGranted = false;
 
-            const onRewarded = await AdMob.addListener(RewardAdEvents ? RewardAdEvents.Rewarded : 'onRewarded', (reward) => {
+            const onRewarded = await AdMob.addListener(RewardAdEvents ? RewardAdEvents.Rewarded : 'onRewarded', () => {
               rewardedGranted = true;
             });
 
             const onDismissed = await AdMob.addListener(RewardAdEvents ? RewardAdEvents.Dismissed : 'onDismissed', () => {
+              clearTimeout(fallbackTimer);
               onRewarded.remove();
               onDismissed.remove();
               AdConfig.isRewardedLoaded = false;
               AdService.preloadRewarded();
-              if (rewardedGranted && typeof onRewardCallback === 'function') {
-                onRewardCallback();
-              }
+              if (rewardedGranted) safeRun();
             });
 
             await AdMob.showRewardVideoAd();
             return;
           } catch (e) {
-            console.warn('Failed to show rewarded ad, granting reward directly:', e);
+            clearTimeout(fallbackTimer);
+            safeRun();
           }
-        }
-        if (typeof onRewardCallback === 'function') {
-          onRewardCallback();
+        } else {
+          clearTimeout(fallbackTimer);
+          safeRun();
         }
       }
     };
@@ -829,6 +848,37 @@
 
   <!-- ================= JAVASCRIPT APPLICATION LOGIC ================= -->
   <script>
+    let synthVoices = [];
+    function initSpeechEngine() {
+      if ('speechSynthesis' in window) {
+        window.speechSynthesis.onvoiceschanged = () => {
+          synthVoices = window.speechSynthesis.getVoices();
+        };
+        synthVoices = window.speechSynthesis.getVoices();
+      }
+    }
+
+    // ANDROID WEBVIEW COMPLIANT VOICE ENGINE
+    function speakText(text, lang = 'hi-IN', rate = 0.88) {
+      if (AppState.isMuted || !('speechSynthesis' in window)) return;
+      try {
+        window.speechSynthesis.cancel(); // Clears queue so no speech is swallowed
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.lang = lang;
+        utterance.rate = rate;
+        utterance.pitch = 1.05;
+
+        if (synthVoices.length > 0) {
+          const matched = synthVoices.find(v => v.lang.startsWith(lang.slice(0, 2)));
+          if (matched) utterance.voice = matched;
+        }
+
+        window.speechSynthesis.speak(utterance);
+      } catch (e) {
+        console.warn('Speech Error:', e);
+      }
+    }
+
     let welcomeInterval = null;
     function initWelcomeProgress() {
       let progress = 10;
@@ -846,20 +896,23 @@
           clearInterval(welcomeInterval);
           if (progressText) progressText.innerText = "✨ पूरी तरह तैयार! शुरू करें पर टैप करें!";
         }
-      }, 250);
+      }, 200);
     }
 
     function dismissWelcomeScreen() {
       if (welcomeInterval) clearInterval(welcomeInterval);
+      AudioFX.init();
+      speakText('नमस्ते!', 'hi-IN');
+
       const welcome = document.getElementById('welcome-screen');
       if (welcome) {
         AudioFX.pop();
         welcome.classList.add('opacity-0', 'pointer-events-none', '-translate-y-4');
-        setTimeout(() => welcome.classList.add('hidden'), 500);
+        setTimeout(() => welcome.classList.add('hidden'), 350);
 
         setTimeout(() => {
           AdService.showBanner();
-        }, 600);
+        }, 500);
       }
     }
 
@@ -961,7 +1014,7 @@
         AudioFX.winFanfare();
         triggerConfetti();
         btn.innerHTML = '<span>🎬</span> 5❤️ पायें (मुफ़्त वीडियो देखें)';
-        alert("🎉 बहुत अच्छे! वीडियो पूरा देखने पर आपके सभी 5 ❤️ हार्ट्स रीचार्ज हो गए हैं।");
+        alert("🎉 बहुत अच्छे! आपके 5 ❤️ हार्ट्स रीचार्ज हो गए हैं।");
       });
     }
 
@@ -984,13 +1037,17 @@
       init() {
         if (!this.ctx) {
           const AudioContext = window.AudioContext || window.webkitAudioContext;
-          this.ctx = new AudioContext();
+          if (AudioContext) this.ctx = new AudioContext();
+        }
+        if (this.ctx && this.ctx.state === 'suspended') {
+          this.ctx.resume();
         }
       },
-      playTone(freq, type = 'sine', duration = 0.15, vol = 0.3) {
+      playTone(freq, type = 'sine', duration = 0.12, vol = 0.25) {
         if (AppState.isMuted) return;
         try {
           this.init();
+          if (!this.ctx) return;
           const osc = this.ctx.createOscillator();
           const gain = this.ctx.createGain();
           osc.type = type;
@@ -1006,37 +1063,27 @@
       pop() { this.playTone(520, 'sine', 0.08, 0.2); },
       success() {
         if (AppState.isMuted) return;
-        this.playTone(523.25, 'sine', 0.1, 0.3);
-        setTimeout(() => this.playTone(659.25, 'sine', 0.1, 0.3), 100);
-        setTimeout(() => this.playTone(783.99, 'sine', 0.25, 0.3), 200);
+        this.playTone(523.25, 'sine', 0.1, 0.25);
+        setTimeout(() => this.playTone(659.25, 'sine', 0.1, 0.25), 90);
+        setTimeout(() => this.playTone(783.99, 'sine', 0.2, 0.25), 180);
       },
       error() {
         if (AppState.isMuted) return;
-        this.playTone(220, 'sawtooth', 0.15, 0.3);
-        setTimeout(() => this.playTone(180, 'sawtooth', 0.25, 0.3), 120);
+        this.playTone(220, 'sawtooth', 0.15, 0.25);
+        setTimeout(() => this.playTone(180, 'sawtooth', 0.2, 0.25), 110);
       },
       winFanfare() {
         if (AppState.isMuted) return;
         [523, 659, 784, 1046].forEach((f, i) => {
-          setTimeout(() => this.playTone(f, 'triangle', 0.25, 0.3), i * 120);
+          setTimeout(() => this.playTone(f, 'triangle', 0.2, 0.25), i * 110);
         });
       }
     };
 
     function triggerConfetti() {
       if (typeof confetti === 'function') {
-        confetti({ particleCount: 60, spread: 70, origin: { y: 0.6 } });
+        confetti({ particleCount: 50, spread: 65, origin: { y: 0.6 } });
       }
-    }
-
-    function speakText(text, lang = 'hi-IN', rate = 0.9) {
-      if (AppState.isMuted || !('speechSynthesis' in window)) return;
-      window.speechSynthesis.cancel();
-      const utterance = new SpeechSynthesisUtterance(text);
-      utterance.lang = lang;
-      utterance.rate = rate;
-      utterance.pitch = 1.05;
-      window.speechSynthesis.speak(utterance);
     }
 
     const DataStore = {
@@ -1114,7 +1161,7 @@
         { char: 'P', word: 'Parrot', icon: '🦜', phonics: 'प' },
         { char: 'Q', word: 'Queen', icon: '👑', phonics: 'क्व' },
         { char: 'R', word: 'Rabbit', icon: '🐇', phonics: 'र' },
-        { char: 'S', word: 'Sun', icon: '☀️️', phonics: 'स' },
+        { char: 'S', word: 'Sun', icon: '☀️', phonics: 'स' },
         { char: 'T', word: 'Tiger', icon: '🐯', phonics: 'ट' },
         { char: 'U', word: 'Umbrella', icon: '☂', phonics: 'अ / यू' },
         { char: 'V', word: 'Van', icon: '🚐', phonics: 'व' },
@@ -1236,6 +1283,7 @@
     }
 
     function navigateCategory(catName) {
+      AudioFX.init();
       AppState.activeCategory = catName;
       document.querySelectorAll('.tab-view').forEach(el => el.classList.add('hidden'));
       
@@ -1505,8 +1553,7 @@
       const countsInTray = {};
       AppState.assembledChips.forEach(c => countsInTray[c] = (countsInTray[c] || 0) + 1);
 
-      const scrambled = shuffleArray(targetList);
-      scrambled.forEach((chipVal) => {
+      targetList.forEach((chipVal) => {
         const usedCount = countsInTray[chipVal] || 0;
         const totalOccurrences = targetList.filter(x => x === chipVal).length;
 
@@ -1539,9 +1586,10 @@
     }
 
     // =========================================================================
-    // HINT BUTTON (10-MINUTE REWARDED AD TIMING LOGIC)
+    // HINT BUTTON (10-MINUTE REWARDED AD TIMING + FAIL-SAFE UNFREEZE)
     // =========================================================================
     function applyHintLogic() {
+      if (!AppState.currentChipItem) return;
       const expected = AppState.currentChipItem.chips;
       const currentIdx = AppState.assembledChips.length;
       if (currentIdx < expected.length) {
@@ -1562,13 +1610,13 @@
 
       const now = Date.now();
       const lastAdTime = parseInt(localStorage.getItem('bg_hint_ad_time') || '0');
-      const tenMinutes = 10 * 60 * 1000; // 10 minutes in milliseconds
+      const tenMinutes = 10 * 60 * 1000;
 
-      // Agar pichle ad ko dekhe huye 10 minute nahi hue hain -> FREE HINT BINA AD KE
+      // Agar pichle ad ko dekhe hue 10 minute nahi hue to turant hint do
       if (now - lastAdTime < tenMinutes) {
         applyHintLogic();
       } else {
-        // 10 minute poore ho gaye -> REWARDED AD PLAY KARO
+        // 10 minute poore hone par ad dikhao
         AdService.showRewarded(() => {
           localStorage.setItem('bg_hint_ad_time', Date.now().toString());
           applyHintLogic();
@@ -1595,6 +1643,12 @@
 
       if (AppState.chipAnswered) {
         AudioFX.pop();
+        if (AppState.chipMode === 'sentence') {
+          AppState.sentenceIndex++;
+        } else {
+          AppState.wordIndex++;
+        }
+        // Smooth transition without white flicker
         loadCurrentChipChallenge();
         return;
       }
@@ -1627,10 +1681,8 @@
 
         if (AppState.chipMode === 'sentence') {
           AppState.completedSentencesCount++;
-          AppState.sentenceIndex++;
         } else {
           AppState.completedWordsCount++;
-          AppState.wordIndex++;
         }
         saveStats();
 
@@ -1649,7 +1701,7 @@
           if (!AppState.chipAnswered) {
             resetChipActionButton();
           }
-        }, 1500);
+        }, 1200);
       }
     }
 
@@ -1711,7 +1763,7 @@
       });
 
       const shuffledCards = shuffleArray(flatCards);
-      shuffledCards.forEach((cardData, idx) => {
+      shuffledCards.forEach((cardData) => {
         const cardEl = document.createElement('div');
         cardEl.className = "card-3d card-pair p-3 text-center cursor-pointer min-h-[75px] flex items-center justify-center font-black text-sm bg-white hover:border-indigo-400";
         cardEl.dataset.pairId = cardData.pairId;
@@ -2079,6 +2131,7 @@
     }
 
     window.addEventListener('DOMContentLoaded', () => {
+      initSpeechEngine();
       updateHeaderStatsDisplay();
       initChipQueues();
       initWelcomeProgress();
