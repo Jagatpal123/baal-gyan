@@ -24,10 +24,9 @@ jobs:
       with:
         node-version: 18
 
-    - name: Install dependencies & Native TTS Plugin
+    - name: Install dependencies
       run: |
-        npm install
-        npm install @capacitor-community/text-to-speech
+        npm install --legacy-peer-deps
         npm run build
 
     - name: Setup Capacitor Android
