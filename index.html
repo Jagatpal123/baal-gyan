@@ -19,7 +19,7 @@
       -webkit-tap-highlight-color: transparent;
     }
     html, body {
-      background-color: #fef3c7 !important; /* Amber-100 lock prevents white flicker */
+      background-color: #fef3c7 !important;
       font-family: 'Baloo 2', 'Nunito', sans-serif;
       user-select: none;
       -webkit-user-select: none;
@@ -138,8 +138,8 @@
     }
 
     @keyframes floatLogo {
-      0%, 100% { transform: translateY(0px) scale(1); }
-      50% { transform: translateY(-8px) scale(1.02); }
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-8px); }
     }
     .animate-float {
       animation: floatLogo 2.5s infinite ease-in-out;
@@ -228,7 +228,6 @@
         <span id="modal-hearts-count" class="font-black text-rose-600">5</span> हार्ट्स हैं।
       </p>
 
-      <!-- REWARDED AD BUTTON 1: 5 HEARTS -->
       <button onclick="triggerRewardedAdForHearts()" id="btn-rewarded-ad" class="w-full btn-3d btn-rose py-3 px-4 rounded-2xl font-black text-sm flex items-center justify-center gap-2">
         <span>🎬</span> 5❤️ पायें (मुफ़्त वीडियो देखें)
       </button>
@@ -492,7 +491,7 @@
           <span class="text-xs font-bold text-slate-400 mx-auto select-none pointer-events-none" id="tray-placeholder">नीचे दिए गए चिप्स को टैप करें...</span>
         </div>
 
-        <!-- Available Chips Pool -->
+        <!-- Available Chips Pool (Scrambled & Jumbled) -->
         <div class="pt-2 border-t border-slate-100">
           <span class="text-[11px] font-black text-slate-400 block mb-1.5">उपलब्ध चिप्स (टैप करें):</span>
           <div id="chip-source-pool" class="flex flex-wrap gap-2 justify-center"></div>
@@ -504,7 +503,6 @@
             🗑 रीसेट
           </button>
           
-          <!-- HINT BUTTON (10-MINUTE REWARDED AD TIMING + FAIL-SAFE) -->
           <button onclick="giveChipHint()" class="btn-3d btn-yellow px-3 py-2.5 rounded-2xl text-xs font-black flex-1 flex items-center justify-center gap-1">
             💡 संकेत (Hint)
           </button>
@@ -757,7 +755,6 @@
               testingDevices: [],
               initializeForTesting: false
             });
-            console.log('AdMob Initialized');
             this.preloadRewarded();
           } catch (e) {
             console.warn('AdMob Init Error:', e);
@@ -799,7 +796,6 @@
         }
       },
 
-      // FAIL-SAFE REWARDED CALL: BUTTON KABHI BHI FREEZE NAHI HOGA
       async showRewarded(onRewardCallback) {
         let callbackExecuted = false;
         const safeRun = () => {
@@ -809,10 +805,9 @@
           }
         };
 
-        // Fallback: Agar Ad 2.5 second me open na ho to user ka button hang mat hone do
         const fallbackTimer = setTimeout(() => {
           safeRun();
-        }, 2500);
+        }, 2200);
 
         if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.AdMob) {
           try {
@@ -848,6 +843,7 @@
 
   <!-- ================= JAVASCRIPT APPLICATION LOGIC ================= -->
   <script>
+    // UNIVERSAL VOICE & AUDIO ENGINE
     let synthVoices = [];
     function initSpeechEngine() {
       if ('speechSynthesis' in window) {
@@ -858,25 +854,33 @@
       }
     }
 
-    // ANDROID WEBVIEW COMPLIANT VOICE ENGINE
-    function speakText(text, lang = 'hi-IN', rate = 0.88) {
-      if (AppState.isMuted || !('speechSynthesis' in window)) return;
-      try {
-        window.speechSynthesis.cancel(); // Clears queue so no speech is swallowed
-        const utterance = new SpeechSynthesisUtterance(text);
-        utterance.lang = lang;
-        utterance.rate = rate;
-        utterance.pitch = 1.05;
+    // Direct and reliable Text-To-Speech with HTML5 audio fallback
+    function speakText(text, lang = 'hi-IN') {
+      if (AppState.isMuted) return;
 
-        if (synthVoices.length > 0) {
-          const matched = synthVoices.find(v => v.lang.startsWith(lang.slice(0, 2)));
-          if (matched) utterance.voice = matched;
+      // 1. Try Native Android Web Speech Synthesis
+      if ('speechSynthesis' in window) {
+        try {
+          window.speechSynthesis.cancel();
+          const utterance = new SpeechSynthesisUtterance(text);
+          utterance.lang = lang;
+          utterance.rate = 0.88;
+          utterance.pitch = 1.05;
+
+          if (synthVoices.length > 0) {
+            const matched = synthVoices.find(v => v.lang.startsWith(lang.slice(0, 2)));
+            if (matched) utterance.voice = matched;
+          }
+
+          window.speechSynthesis.speak(utterance);
+          return;
+        } catch (e) {
+          console.warn("SpeechSynthesis failed, using sound synthesizer:", e);
         }
-
-        window.speechSynthesis.speak(utterance);
-      } catch (e) {
-        console.warn('Speech Error:', e);
       }
+
+      // 2. Reliable Tone Synthesizer fallback if phone TTS is disabled
+      AudioFX.pop();
     }
 
     let welcomeInterval = null;
@@ -940,6 +944,7 @@
 
       currentChipItem: null,
       assembledChips: [],
+      scrambledSourceChips: [], // Guaranteed scrambled chips
       chipAnswered: false,
 
       selectedPairCards: [],
@@ -1436,6 +1441,7 @@
       step();
     }
 
+    // Strong array shuffler
     function shuffleArray(arr) {
       const array = [...arr];
       for (let i = array.length - 1; i > 0; i--) {
@@ -1443,6 +1449,18 @@
         [array[i], array[j]] = [array[j], array[i]];
       }
       return array;
+    }
+
+    // Guaranteed Non-Serial Shuffler (Never returns original sequence)
+    function jumbleChipsArray(arr) {
+      if (arr.length <= 1) return [...arr];
+      let jumbled = shuffleArray(arr);
+      let attempts = 0;
+      while (jumbled.every((v, i) => v === arr[i]) && attempts < 10) {
+        jumbled = shuffleArray(arr);
+        attempts++;
+      }
+      return jumbled;
     }
 
     function initChipQueues() {
@@ -1518,6 +1536,9 @@
       }
 
       AppState.currentChipItem = currentItem;
+      // Scramble source chips immediately so they are NEVER in order
+      AppState.scrambledSourceChips = jumbleChipsArray(currentItem.chips);
+
       const progressPercent = Math.min(100, Math.round((solvedCount / totalBankCount) * 100));
       document.getElementById('chip-progress-fill').style.width = `${Math.max(5, progressPercent)}%`;
       document.getElementById('chip-progress-text').innerText = `${solvedCount} / ${totalBankCount} हल हुआ`;
@@ -1553,7 +1574,8 @@
       const countsInTray = {};
       AppState.assembledChips.forEach(c => countsInTray[c] = (countsInTray[c] || 0) + 1);
 
-      targetList.forEach((chipVal) => {
+      // Render from the permanently jumbled pool so order never reveals the answer
+      AppState.scrambledSourceChips.forEach((chipVal) => {
         const usedCount = countsInTray[chipVal] || 0;
         const totalOccurrences = targetList.filter(x => x === chipVal).length;
 
@@ -1585,9 +1607,6 @@
       renderTrayAndSourcePool();
     }
 
-    // =========================================================================
-    // HINT BUTTON (10-MINUTE REWARDED AD TIMING + FAIL-SAFE UNFREEZE)
-    // =========================================================================
     function applyHintLogic() {
       if (!AppState.currentChipItem) return;
       const expected = AppState.currentChipItem.chips;
@@ -1612,11 +1631,9 @@
       const lastAdTime = parseInt(localStorage.getItem('bg_hint_ad_time') || '0');
       const tenMinutes = 10 * 60 * 1000;
 
-      // Agar pichle ad ko dekhe hue 10 minute nahi hue to turant hint do
       if (now - lastAdTime < tenMinutes) {
         applyHintLogic();
       } else {
-        // 10 minute poore hone par ad dikhao
         AdService.showRewarded(() => {
           localStorage.setItem('bg_hint_ad_time', Date.now().toString());
           applyHintLogic();
@@ -1648,7 +1665,6 @@
         } else {
           AppState.wordIndex++;
         }
-        // Smooth transition without white flicker
         loadCurrentChipChallenge();
         return;
       }
@@ -2043,14 +2059,26 @@
       }
     }
 
+    // ROBUST MICROPHONE PERMISSION & VOICE RECOGNITION
     async function handleVoiceMicClick() {
-      const micBtn = document.getElementById('btn-voice-mic');
       const micLabel = document.getElementById('mic-label');
       const pulseBanner = document.getElementById('mic-recording-pulse');
 
+      // 1. Explicitly request OS microphone permission from Android
+      try {
+        if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+          const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+          // Stop immediately once permission granted
+          stream.getTracks().forEach(track => track.stop());
+        }
+      } catch (err) {
+        console.warn("Microphone permission prompt failed or dismissed:", err);
+      }
+
+      // 2. Start Speech Recognition
       const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
 
-      if (SpeechRecognition && (location.protocol === 'https:' || location.hostname === 'localhost')) {
+      if (SpeechRecognition) {
         try {
           if (AppState.activeRecognition) {
             AppState.activeRecognition.stop();
