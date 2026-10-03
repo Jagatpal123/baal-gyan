@@ -229,7 +229,7 @@
       </p>
 
       <button onclick="triggerRewardedAdForHearts()" id="btn-rewarded-ad" class="w-full btn-3d btn-rose py-3 px-4 rounded-2xl font-black text-sm flex items-center justify-center gap-2">
-        <span>🎬</span> 5❤️️ पायें (मुफ़्त वीडियो देखें)
+        <span>🎬</span> 5❤ पायें (मुफ़्त वीडियो देखें)
       </button>
 
       <button onclick="refillHeartsWithGems()" class="w-full btn-3d btn-blue py-3 px-4 rounded-2xl font-black text-sm flex items-center justify-center gap-2">
@@ -755,7 +755,6 @@
               testingDevices: [],
               initializeForTesting: false
             });
-            console.log('AdMob Initialized');
             this.preloadRewarded();
           } catch (e) {
             console.warn('AdMob Init Error:', e);
@@ -845,10 +844,9 @@
   <!-- ================= JAVASCRIPT APPLICATION LOGIC ================= -->
   <script>
     // ==========================================
-    // 100% GUARANTEED WORKING DUAL VOICE ENGINE
+    // 100% GUARANTEED WORKING NATIVE TTS ENGINE
     // ==========================================
     let synthVoices = [];
-    let currentSpeechAudio = null;
 
     function initSpeechEngine() {
       if ('speechSynthesis' in window) {
@@ -859,15 +857,32 @@
       }
     }
 
-    function speakText(text, lang = 'hi-IN') {
+    async function speakText(text, lang = 'hi-IN') {
       if (AppState.isMuted) return;
 
       const cleanStr = (text || '').trim();
       if (!cleanStr) return;
 
-      let spokeWithSynth = false;
+      // 1. First priority: Capacitor Native Text-To-Speech Plugin (Android hardware speech)
+      if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.TextToSpeech) {
+        try {
+          const { TextToSpeech } = window.Capacitor.Plugins;
+          await TextToSpeech.stop();
+          await TextToSpeech.speak({
+            text: cleanStr,
+            lang: lang,
+            rate: 0.9,
+            pitch: 1.0,
+            volume: 1.0,
+            category: 'ambient'
+          });
+          return;
+        } catch (e) {
+          console.warn("Native TTS error:", e);
+        }
+      }
 
-      // 1. Try Native Android SpeechSynthesis
+      // 2. Second priority: Standard Web SpeechSynthesis
       if ('speechSynthesis' in window) {
         try {
           window.speechSynthesis.cancel();
@@ -880,33 +895,15 @@
             if (matched) utterance.voice = matched;
           }
 
-          utterance.onstart = () => { spokeWithSynth = true; };
           window.speechSynthesis.speak(utterance);
+          return;
         } catch (e) {
           console.warn("SpeechSynthesis error:", e);
         }
       }
 
-      // 2. High-Quality Direct Audio Fallback (Never Fails on Android)
-      setTimeout(() => {
-        if (!spokeWithSynth || !window.speechSynthesis.speaking) {
-          try {
-            if (currentSpeechAudio) {
-              currentSpeechAudio.pause();
-              currentSpeechAudio = null;
-            }
-            const langCode = lang.startsWith('en') ? 'en' : 'hi';
-            const encoded = encodeURIComponent(cleanStr);
-            const audioUrl = `https://translate.google.com/translate_tts?ie=UTF-8&tl=${langCode}&client=tw-ob&q=${encoded}`;
-            currentSpeechAudio = new Audio(audioUrl);
-            currentSpeechAudio.play().catch(() => {
-              AudioFX.pop();
-            });
-          } catch (err) {
-            AudioFX.pop();
-          }
-        }
-      }, 150);
+      // 3. Fallback sound effect
+      AudioFX.pop();
     }
 
     let welcomeInterval = null;
@@ -1044,7 +1041,7 @@
         closeHeartsModal();
         AudioFX.winFanfare();
         triggerConfetti();
-        btn.innerHTML = '<span>🎬</span> 5❤️ पायें (मुफ़्त वीडियो देखें)';
+        btn.innerHTML = '<span>🎬</span> 5❤ पायें (मुफ़्त वीडियो देखें)';
         alert("🎉 बहुत अच्छे! आपके 5 ❤️ हार्ट्स रीचार्ज हो गए हैं।");
       });
     }
@@ -1135,7 +1132,7 @@
       ],
 
       hindiVyanjan: [
-        { char: 'क', word: 'कबूतर', en: 'Pigeon', icon: '🕊️' },
+        { char: 'क', word: 'कबूतर', en: 'Pigeon', icon: '🕊️️' },
         { char: 'ख', word: 'खरगोश', en: 'Rabbit', icon: '🐇' },
         { char: 'ग', word: 'गमला', en: 'Flowerpot', icon: '🪴' },
         { char: 'घ', word: 'घड़ी', en: 'Clock', icon: '⏰' },
