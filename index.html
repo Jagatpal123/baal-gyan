@@ -223,7 +223,7 @@
         <span id="modal-hearts-count" class="font-black text-rose-600">5</span> हार्ट्स हैं।
       </p>
 
-      <!-- REWARDED AD BUTTON -->
+      <!-- REWARDED AD BUTTON 1: 5 HEARTS -->
       <button onclick="triggerRewardedAdForHearts()" id="btn-rewarded-ad" class="w-full btn-3d btn-rose py-3 px-4 rounded-2xl font-black text-sm flex items-center justify-center gap-2">
         <span>🎬</span> 5❤️ पायें (मुफ़्त वीडियो देखें)
       </button>
@@ -496,11 +496,14 @@
         <!-- Action Controls -->
         <div class="flex gap-2 pt-2">
           <button onclick="clearCurrentTray()" class="btn-3d bg-rose-100 border-2 border-rose-300 text-rose-700 px-3 py-2.5 rounded-2xl text-xs font-black flex-1">
-            🗑️️ रीसेट
+            🗑 रीसेट
           </button>
-          <button onclick="giveChipHint()" class="btn-3d btn-yellow px-3 py-2.5 rounded-2xl text-xs font-black flex-1">
+          
+          <!-- HINT BUTTON (10-MINUTE REWARDED AD TIMING) -->
+          <button onclick="giveChipHint()" class="btn-3d btn-yellow px-3 py-2.5 rounded-2xl text-xs font-black flex-1 flex items-center justify-center gap-1">
             💡 संकेत (Hint)
           </button>
+          
           <button onclick="handleChipMainButtonClick()" id="btn-chip-main-action" class="btn-3d btn-green px-5 py-2.5 rounded-2xl text-sm font-black flex-[2]">
             ✓ जाँचें
           </button>
@@ -750,7 +753,6 @@
               initializeForTesting: false
             });
             console.log('AdMob Initialized');
-            // Preload Rewarded Ad so it is ready when needed
             this.preloadRewarded();
           } catch (e) {
             console.warn('AdMob Init Error:', e);
@@ -847,7 +849,6 @@
       }, 250);
     }
 
-    // WELCOME SCREEN DISMISSAL: SHOW BANNER ONLY AFTER ENTERING APP
     function dismissWelcomeScreen() {
       if (welcomeInterval) clearInterval(welcomeInterval);
       const welcome = document.getElementById('welcome-screen');
@@ -856,7 +857,6 @@
         welcome.classList.add('opacity-0', 'pointer-events-none', '-translate-y-4');
         setTimeout(() => welcome.classList.add('hidden'), 500);
 
-        // Ab bacha welcome screen se main game screen me aa gaya, ab banner ad dikhao
         setTimeout(() => {
           AdService.showBanner();
         }, 600);
@@ -1114,7 +1114,7 @@
         { char: 'P', word: 'Parrot', icon: '🦜', phonics: 'प' },
         { char: 'Q', word: 'Queen', icon: '👑', phonics: 'क्व' },
         { char: 'R', word: 'Rabbit', icon: '🐇', phonics: 'र' },
-        { char: 'S', word: 'Sun', icon: '☀️', phonics: 'स' },
+        { char: 'S', word: 'Sun', icon: '☀️️', phonics: 'स' },
         { char: 'T', word: 'Tiger', icon: '🐯', phonics: 'ट' },
         { char: 'U', word: 'Umbrella', icon: '☂', phonics: 'अ / यू' },
         { char: 'V', word: 'Van', icon: '🚐', phonics: 'व' },
@@ -1538,8 +1538,10 @@
       renderTrayAndSourcePool();
     }
 
-    function giveChipHint() {
-      if (!AppState.currentChipItem || AppState.chipAnswered) return;
+    // =========================================================================
+    // HINT BUTTON (10-MINUTE REWARDED AD TIMING LOGIC)
+    // =========================================================================
+    function applyHintLogic() {
       const expected = AppState.currentChipItem.chips;
       const currentIdx = AppState.assembledChips.length;
       if (currentIdx < expected.length) {
@@ -1549,6 +1551,28 @@
         speakText(nextCorrectChip, 'hi-IN');
         resetChipActionButton();
         renderTrayAndSourcePool();
+      }
+    }
+
+    function giveChipHint() {
+      if (!AppState.currentChipItem || AppState.chipAnswered) return;
+      const expected = AppState.currentChipItem.chips;
+      const currentIdx = AppState.assembledChips.length;
+      if (currentIdx >= expected.length) return;
+
+      const now = Date.now();
+      const lastAdTime = parseInt(localStorage.getItem('bg_hint_ad_time') || '0');
+      const tenMinutes = 10 * 60 * 1000; // 10 minutes in milliseconds
+
+      // Agar pichle ad ko dekhe huye 10 minute nahi hue hain -> FREE HINT BINA AD KE
+      if (now - lastAdTime < tenMinutes) {
+        applyHintLogic();
+      } else {
+        // 10 minute poore ho gaye -> REWARDED AD PLAY KARO
+        AdService.showRewarded(() => {
+          localStorage.setItem('bg_hint_ad_time', Date.now().toString());
+          applyHintLogic();
+        });
       }
     }
 
@@ -2060,7 +2084,6 @@
       initWelcomeProgress();
       goToHomeScreen();
 
-      // Only initialize AdMob backend here, do NOT show banner yet
       setTimeout(() => {
         AdService.init();
       }, 500);
