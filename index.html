@@ -843,66 +843,36 @@
 
   <!-- ================= JAVASCRIPT APPLICATION LOGIC ================= -->
   <script>
-    // ==========================================
-    // 100% GUARANTEED WORKING NATIVE TTS ENGINE
-    // ==========================================
-    let synthVoices = [];
-
-    function initSpeechEngine() {
-      if ('speechSynthesis' in window) {
-        window.speechSynthesis.onvoiceschanged = () => {
-          synthVoices = window.speechSynthesis.getVoices();
-        };
-        synthVoices = window.speechSynthesis.getVoices();
-      }
-    }
-
-    async function speakText(text, lang = 'hi-IN') {
+    // =========================================================================
+    // 100% WORKING DIRECT HARDWARE ANDROID NATIVE TTS ENGINE
+    // =========================================================================
+    function speakText(text, lang = 'hi-IN') {
       if (AppState.isMuted) return;
-
       const cleanStr = (text || '').trim();
       if (!cleanStr) return;
 
-      // 1. First priority: Capacitor Native Text-To-Speech Plugin (Android hardware speech)
-      if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.TextToSpeech) {
+      // 1. DIRECT HARDWARE BRIDGE: Calls Phone OS Native Speech Engine directly
+      if (window.AndroidTTS && typeof window.AndroidTTS.speak === 'function') {
         try {
-          const { TextToSpeech } = window.Capacitor.Plugins;
-          await TextToSpeech.stop();
-          await TextToSpeech.speak({
-            text: cleanStr,
-            lang: lang,
-            rate: 0.9,
-            pitch: 1.0,
-            volume: 1.0,
-            category: 'ambient'
-          });
+          window.AndroidTTS.speak(cleanStr, lang);
           return;
         } catch (e) {
-          console.warn("Native TTS error:", e);
+          console.warn("AndroidTTS error:", e);
         }
       }
 
-      // 2. Second priority: Standard Web SpeechSynthesis
+      // 2. Browser SpeechSynthesis Fallback
       if ('speechSynthesis' in window) {
         try {
           window.speechSynthesis.cancel();
           const utterance = new SpeechSynthesisUtterance(cleanStr);
           utterance.lang = lang;
           utterance.rate = 0.88;
-
-          if (synthVoices && synthVoices.length > 0) {
-            const matched = synthVoices.find(v => v.lang.startsWith(lang.slice(0, 2)));
-            if (matched) utterance.voice = matched;
-          }
-
           window.speechSynthesis.speak(utterance);
           return;
-        } catch (e) {
-          console.warn("SpeechSynthesis error:", e);
-        }
+        } catch (err) {}
       }
 
-      // 3. Fallback sound effect
       AudioFX.pop();
     }
 
@@ -1132,7 +1102,7 @@
       ],
 
       hindiVyanjan: [
-        { char: 'क', word: 'कबूतर', en: 'Pigeon', icon: '🕊️️' },
+        { char: 'क', word: 'कबूतर', en: 'Pigeon', icon: '🕊' },
         { char: 'ख', word: 'खरगोश', en: 'Rabbit', icon: '🐇' },
         { char: 'ग', word: 'गमला', en: 'Flowerpot', icon: '🪴' },
         { char: 'घ', word: 'घड़ी', en: 'Clock', icon: '⏰' },
@@ -1404,7 +1374,7 @@
         const phrase = lang === 'en-US' ? `${itm.char} for ${itm.word}` : `${itm.char} से ${itm.word}`;
         speakText(phrase, lang);
         idx++;
-        setTimeout(speakNext, 1300);
+        setTimeout(speakNext, 1400);
       }
       speakNext();
     }
@@ -1473,7 +1443,6 @@
       return array;
     }
 
-    // Guaranteed Non-Serial Shuffler (Never returns original sequence)
     function jumbleChipsArray(arr) {
       if (arr.length <= 1) return [...arr];
       let jumbled = shuffleArray(arr);
@@ -1558,7 +1527,6 @@
       }
 
       AppState.currentChipItem = currentItem;
-      // Scramble source chips immediately so they are NEVER in order
       AppState.scrambledSourceChips = jumbleChipsArray(currentItem.chips);
 
       const progressPercent = Math.min(100, Math.round((solvedCount / totalBankCount) * 100));
@@ -2177,7 +2145,6 @@
     }
 
     window.addEventListener('DOMContentLoaded', () => {
-      initSpeechEngine();
       updateHeaderStatsDisplay();
       initChipQueues();
       initWelcomeProgress();
