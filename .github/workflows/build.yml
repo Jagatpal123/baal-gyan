@@ -34,7 +34,7 @@ jobs:
         npx cap add android
         npx cap sync android
 
-    - name: Configure SDK 36, App Icons, Mic Permissions & AdMob
+    - name: Configure Permissions, WebView Mic & AdMob
       run: |
         # 1. SDK Settings
         sed -i 's/minSdkVersion = .*/minSdkVersion = 24/' android/variables.gradle
@@ -46,7 +46,7 @@ jobs:
         sed -i 's/versionCode 1/versionCode 1/g' android/app/build.gradle
         sed -i 's/versionName "1.0"/versionName "1.0.0"/g' android/app/build.gradle
 
-        # 2. Inject App Icon safely (Remove duplicate XML files)
+        # 2. Inject App Icon safely
         if [ -f "logo.png" ]; then
           rm -rf android/app/src/main/res/mipmap-anydpi-v26
           for dir in android/app/src/main/res/mipmap-hdpi android/app/src/main/res/mipmap-mdpi android/app/src/main/res/mipmap-xhdpi android/app/src/main/res/mipmap-xxhdpi android/app/src/main/res/mipmap-xxxhdpi; do
@@ -57,16 +57,50 @@ jobs:
           done
         fi
 
-        # 3. Inject Android Permissions (Microphone, Audio & Internet)
+        # 3. Android Permissions in Manifest
         sed -i '/<manifest/a \    <uses-permission android:name="android.permission.INTERNET" />\n    <uses-permission android:name="android.permission.RECORD_AUDIO" />\n    <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />' android/app/src/main/AndroidManifest.xml
 
-        # 4. AdMob App ID Injection
+        # 4. AdMob App ID
         sed -i '/<\/application>/i \        <meta-data android:name="com.google.android.gms.ads.APPLICATION_ID" android:value="ca-app-pub-6302105448775587~3000039098"\/>' android/app/src/main/AndroidManifest.xml
 
-    # --- STEP A: TEST AD WALI APK BANANA (ZIPALIGN + APKSIGNER) ---
+        # 5. Overhaul MainActivity.java to grant WebView Mic & Unblock Audio
+        cat << 'EOF' > android/app/src/main/java/com/jagatpal/balgyanultra/MainActivity.java
+        package com.jagatpal.balgyanultra;
+
+        import android.os.Bundle;
+        import android.webkit.PermissionRequest;
+        import android.webkit.WebChromeClient;
+        import android.webkit.WebView;
+        import androidx.core.app.ActivityCompat;
+        import androidx.core.content.ContextCompat;
+        import android.content.pm.PackageManager;
+        import android.Manifest;
+        import com.getcapacitor.BridgeActivity;
+
+        public class MainActivity extends BridgeActivity {
+            @Override
+            public void onCreate(Bundle savedInstanceState) {
+                super.onCreate(savedInstanceState);
+
+                if (ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
+                    ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.RECORD_AUDIO}, 101);
+                }
+
+                WebView webView = getBridge().getWebView();
+                webView.getSettings().setMediaPlaybackRequiresUserGesture(false);
+                webView.setWebChromeClient(new WebChromeClient() {
+                    @Override
+                    public void onPermissionRequest(final PermissionRequest request) {
+                        runOnUiThread(() -> request.grant(request.getResources()));
+                    }
+                });
+            }
+        }
+        EOF
+
+    # --- STEP A: TEST AD WALI APK BANANA ---
     - name: Prepare, Build and Sign Test-Ad APK
       run: |
-        # Inject Google Official Test Ads into HTML for APK
         sed -i 's/ca-app-pub-6302105448775587\/9146645040/ca-app-pub-3940256099942544\/6300978111/g' android/app/src/main/assets/public/index.html
         sed -i 's/ca-app-pub-6302105448775587\/2277984366/ca-app-pub-3940256099942544\/5224354917/g' android/app/src/main/assets/public/index.html
         sed -i 's/isTesting: false/isTesting: true/g' android/app/src/main/assets/public/index.html
@@ -76,35 +110,28 @@ jobs:
         ./gradlew assembleRelease
 
         BUILD_TOOLS_DIR=$(ls -d $ANDROID_HOME/build-tools/* | tail -1)
-
-        # Zipalign APK
         $BUILD_TOOLS_DIR/zipalign -v -p 4 app/build/outputs/apk/release/app-release-unsigned.apk app/build/outputs/apk/release/app-aligned.apk
-
-        # Apksigner v2/v3 sign
         $BUILD_TOOLS_DIR/apksigner sign --ks ../release.keystore --ks-key-alias bhakti --ks-pass pass:Jagatpal@2026 --key-pass pass:Jagatpal@2026 --out app/build/outputs/apk/release/BalGyan-TestAds.apk app/build/outputs/apk/release/app-aligned.apk
 
-    # --- STEP B: REAL AD WALI AAB BANANA (FOR PLAY STORE) ---
+    # --- STEP B: PRODUCTION REAL AD WALI AAB BANANA ---
     - name: Prepare, Build and Sign Production AAB
       run: |
-        # Restore Real Ads in HTML for AAB
         sed -i 's/ca-app-pub-3940256099942544\/6300978111/ca-app-pub-6302105448775587\/9146645040/g' android/app/src/main/assets/public/index.html
         sed -i 's/ca-app-pub-3940256099942544\/5224354917/ca-app-pub-6302105448775587\/2277984366/g' android/app/src/main/assets/public/index.html
         sed -i 's/isTesting: true/isTesting: false/g' android/app/src/main/assets/public/index.html
 
         cd android
         ./gradlew bundleRelease
-
-        # Sign Production AAB
         jarsigner -verbose -sigalg SHA256withRSA -digestalg SHA-256 -keystore ../release.keystore -storepass Jagatpal@2026 -keypass Jagatpal@2026 app/build/outputs/bundle/release/app-release.aab bhakti
 
-    # --- ARTIFACTS UPLOAD ---
-    - name: Upload Test APK (Phone Testing)
+    # --- UPLOAD ARTIFACTS ---
+    - name: Upload Test APK
       uses: actions/upload-artifact@v4
       with:
         name: BalGyan-TestAds-APK
         path: android/app/build/outputs/apk/release/BalGyan-TestAds.apk
 
-    - name: Upload Production Real-Ad AAB (Play Store Release)
+    - name: Upload Production Real-Ad AAB
       uses: actions/upload-artifact@v4
       with:
         name: BalGyan-Production-RealAds-AAB
