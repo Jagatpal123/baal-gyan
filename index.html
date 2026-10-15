@@ -72,6 +72,15 @@
       box-shadow: 0 1px 0 #8533c3;
     }
 
+    .btn-orange {
+      background-color: #f97316;
+      box-shadow: 0 4px 0 #c2410c;
+      color: white;
+    }
+    .btn-orange:active {
+      box-shadow: 0 1px 0 #c2410c;
+    }
+
     .btn-rose {
       background-color: #ff4b4b;
       box-shadow: 0 4px 0 #d32f2f;
@@ -170,7 +179,7 @@
       </div>
 
       <h1 class="text-3xl font-black text-white drop-shadow-md tracking-tight">बाल ज्ञान प्रो Ultra</h1>
-      <p class="text-sm font-bold text-emerald-50 mt-1 drop-shadow">अक्षर, मात्राएँ, शब्द व मस्ती से सीखें! 🚀</p>
+      <p class="text-sm font-bold text-emerald-50 mt-1 drop-shadow">अक्षर, मात्राएँ, गणित व मस्ती से सीखें! 🚀</p>
 
       <div class="w-64 h-3.5 bg-black/20 rounded-full overflow-hidden mt-6 p-0.5 border border-white/30 shadow-inner">
         <div id="welcome-progress" class="bg-gradient-to-r from-yellow-300 to-amber-400 h-full rounded-full transition-all duration-200 shadow-md" style="width: 10%;"></div>
@@ -302,6 +311,21 @@
           <span class="text-slate-400 font-black text-xl">➔</span>
         </div>
 
+        <!-- NEW CATEGORY: GINTI, PAHADA & IKAYI-DAHAI -->
+        <div onclick="navigateCategory('mathlab')" class="card-3d p-3.5 flex items-center justify-between cursor-pointer border-orange-200 hover:border-orange-400">
+          <div class="flex items-center gap-3">
+            <div class="w-12 h-12 rounded-2xl bg-orange-100 text-orange-600 flex items-center justify-center text-2xl font-black">🔢</div>
+            <div>
+              <div class="flex items-center gap-1.5">
+                <h3 class="text-base font-black text-slate-800">गिनती, पहाड़ा व इकाई-दहाई</h3>
+                <span class="text-[9px] bg-orange-500 text-white px-1.5 py-0.5 rounded-full font-black">नया ✨</span>
+              </div>
+              <p class="text-xs font-bold text-slate-500">1-100 गिनती, 1-20 पहाड़ा व स्थान मान लैब 🧮</p>
+            </div>
+          </div>
+          <span class="text-slate-400 font-black text-xl">➔</span>
+        </div>
+
         <div onclick="navigateCategory('chips')" class="card-3d p-3.5 flex items-center justify-between cursor-pointer border-amber-300 hover:border-amber-400">
           <div class="flex items-center gap-3">
             <div class="w-12 h-12 rounded-2xl bg-amber-100 text-amber-600 flex items-center justify-center text-2xl font-black">🧩</div>
@@ -358,6 +382,87 @@
             </div>
           </div>
           <span class="text-slate-400 font-black text-xl">➔</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- VIEW: MATH LAB (GINITI 1-100, PAHADA 1-20, IKAYI-DAHAI) -->
+    <section id="view-mathlab" class="tab-view hidden flex flex-col gap-3">
+      <div class="flex items-center justify-between">
+        <button onclick="goToHomeScreen()" class="btn-3d bg-white border-2 border-slate-300 text-slate-700 px-3 py-1.5 rounded-xl text-xs font-black flex items-center gap-1 shadow-sm">
+          ← मुख्य मेनू
+        </button>
+        <span class="text-xs font-black text-orange-700 bg-orange-100 px-2.5 py-1 rounded-xl">गणित शाला 🧮</span>
+      </div>
+
+      <!-- Mode Selector -->
+      <div class="grid grid-cols-3 gap-1 bg-amber-200/60 p-1 rounded-2xl text-center">
+        <button onclick="switchMathSubTab('ginti')" id="btn-math-ginti" class="py-2 text-[11px] font-black rounded-xl bg-white shadow-sm text-orange-700">1-100 गिनती</button>
+        <button onclick="switchMathSubTab('pahada')" id="btn-math-pahada" class="py-2 text-[11px] font-black rounded-xl text-slate-600">1-20 पहाड़ा</button>
+        <button onclick="switchMathSubTab('ikayi')" id="btn-math-ikayi" class="py-2 text-[11px] font-black rounded-xl text-slate-600">इकाई-दहाई</button>
+      </div>
+
+      <!-- Banner -->
+      <div class="flex items-center justify-between bg-white border-2 border-orange-200 rounded-2xl p-2.5 shadow-sm">
+        <div class="flex items-center gap-2">
+          <span class="text-2xl" id="math-banner-icon">🔢</span>
+          <div>
+            <h3 id="math-banner-title" class="text-sm font-extrabold text-slate-800">1 से 100 तक गिनती सीखें</h3>
+            <p id="math-banner-sub" class="text-[11px] text-slate-500 font-bold">संख्या पर टैप करें और उच्चारण सुनें</p>
+          </div>
+        </div>
+        <button onclick="handleMathActionTopBtn()" id="btn-math-top-action" class="btn-3d btn-orange px-3 py-1.5 rounded-xl text-xs font-black flex items-center gap-1 shadow-sm">
+          <span>🔊</span> सब सुनें
+        </button>
+      </div>
+
+      <!-- Subcontainer: Ginti -->
+      <div id="math-ginti-container" class="flex flex-col gap-2.5">
+        <div class="flex gap-1.5 overflow-x-auto no-scrollbar py-1" id="ginti-range-scroller"></div>
+        <div id="ginti-grid" class="grid grid-cols-4 sm:grid-cols-5 gap-2.5 pb-4"></div>
+      </div>
+
+      <!-- Subcontainer: Pahada -->
+      <div id="math-pahada-container" class="hidden flex flex-col gap-2.5">
+        <div>
+          <label class="text-xs font-black text-slate-600 mb-1 block">पहाड़ा चुनें (Table 1 to 20):</label>
+          <div id="pahada-selector-scroller" class="flex gap-1.5 overflow-x-auto no-scrollbar py-1"></div>
+        </div>
+        <div id="pahada-grid" class="grid grid-cols-2 gap-2.5 pb-4"></div>
+      </div>
+
+      <!-- Subcontainer: Ikayi Dahai -->
+      <div id="math-ikayi-container" class="hidden flex flex-col gap-3 pb-4">
+        <div class="bg-gradient-to-r from-amber-500 to-orange-500 text-white rounded-2xl p-3 shadow-md flex items-center justify-between">
+          <div>
+            <h3 class="text-base font-black">स्थान मान (Place Values) 🌟</h3>
+            <p class="text-xs text-amber-100 font-semibold">इकाई, दहाई, सैकड़ा व हज़ार को समझें</p>
+          </div>
+          <div class="text-3xl">🏛️</div>
+        </div>
+
+        <div id="ikayi-cards-list" class="flex flex-col gap-2.5"></div>
+
+        <div class="bg-white border-2 border-orange-300 rounded-2xl p-3 shadow-sm">
+          <h4 class="text-xs font-black text-orange-900 mb-1">💡 उदाहरण से समझें (संख्या: 4321):</h4>
+          <div class="grid grid-cols-4 gap-1.5 text-center text-xs font-bold pt-1">
+            <div class="bg-rose-50 border border-rose-200 rounded-xl p-2">
+              <span class="text-rose-700 font-black text-sm block">4</span>
+              <span class="text-[10px] text-slate-500">हज़ार (4000)</span>
+            </div>
+            <div class="bg-amber-50 border border-amber-200 rounded-xl p-2">
+              <span class="text-amber-700 font-black text-sm block">3</span>
+              <span class="text-[10px] text-slate-500">सैकड़ा (300)</span>
+            </div>
+            <div class="bg-emerald-50 border border-emerald-200 rounded-xl p-2">
+              <span class="text-emerald-700 font-black text-sm block">2</span>
+              <span class="text-[10px] text-slate-500">दहाई (20)</span>
+            </div>
+            <div class="bg-sky-50 border border-sky-200 rounded-xl p-2">
+              <span class="text-sky-700 font-black text-sm block">1</span>
+              <span class="text-[10px] text-slate-500">इकाई (1)</span>
+            </div>
+          </div>
         </div>
       </div>
     </section>
@@ -737,7 +842,7 @@
     </div>
   </nav>
 
-  <!-- ================= ADMOB NATIVE INTEGRATION ENGINE ================= -->
+  <!-- ================= ADMOB NATIVE INTEGRATION ENGINE (FAMILIES POLICY COMPLIANT) ================= -->
   <script>
     const AdConfig = {
       bannerId: 'ca-app-pub-6302105448775587/9146645040',
@@ -751,9 +856,12 @@
         if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.AdMob) {
           try {
             const { AdMob } = window.Capacitor.Plugins;
+            // Google Play Families Policy: Tag for Child Directed Treatment & Max Rating G
             await AdMob.initialize({
               testingDevices: [],
-              initializeForTesting: false
+              initializeForTesting: false,
+              tagForChildDirectedTreatment: true,
+              maxAdContentRating: 'G'
             });
             this.preloadRewarded();
           } catch (e) {
@@ -772,7 +880,9 @@
               adSize: BannerAdSize ? BannerAdSize.BANNER : 'BANNER',
               position: BannerAdPosition ? BannerAdPosition.BOTTOM_CENTER : 'BOTTOM_CENTER',
               margin: 60,
-              isTesting: false
+              isTesting: false,
+              tagForChildDirectedTreatment: true,
+              maxAdContentRating: 'G'
             });
             AdConfig.bannerVisible = true;
           } catch (e) {
@@ -787,7 +897,9 @@
             const { AdMob } = window.Capacitor.Plugins;
             await AdMob.prepareRewardVideoAd({
               adId: AdConfig.rewardedId,
-              isTesting: false
+              isTesting: false,
+              tagForChildDirectedTreatment: true,
+              maxAdContentRating: 'G'
             });
             AdConfig.isRewardedLoaded = true;
           } catch (e) {
@@ -798,16 +910,12 @@
 
       async showRewarded(onRewardCallback) {
         let callbackExecuted = false;
-        const safeRun = () => {
+        const executeCallback = () => {
           if (!callbackExecuted && typeof onRewardCallback === 'function') {
             callbackExecuted = true;
             onRewardCallback();
           }
         };
-
-        const fallbackTimer = setTimeout(() => {
-          safeRun();
-        }, 2200);
 
         if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.AdMob) {
           try {
@@ -819,23 +927,23 @@
             });
 
             const onDismissed = await AdMob.addListener(RewardAdEvents ? RewardAdEvents.Dismissed : 'onDismissed', () => {
-              clearTimeout(fallbackTimer);
               onRewarded.remove();
               onDismissed.remove();
               AdConfig.isRewardedLoaded = false;
               AdService.preloadRewarded();
-              if (rewardedGranted) safeRun();
+              if (rewardedGranted) {
+                executeCallback();
+              }
             });
 
             await AdMob.showRewardVideoAd();
             return;
           } catch (e) {
-            clearTimeout(fallbackTimer);
-            safeRun();
+            console.warn('Rewarded show error:', e);
+            executeCallback();
           }
         } else {
-          clearTimeout(fallbackTimer);
-          safeRun();
+          executeCallback();
         }
       }
     };
@@ -851,7 +959,6 @@
       const cleanStr = (text || '').trim();
       if (!cleanStr) return;
 
-      // 1. DIRECT HARDWARE BRIDGE: Calls Phone OS Native Speech Engine directly
       if (window.AndroidTTS && typeof window.AndroidTTS.speak === 'function') {
         try {
           window.AndroidTTS.speak(cleanStr, lang);
@@ -861,7 +968,6 @@
         }
       }
 
-      // 2. Browser SpeechSynthesis Fallback
       if ('speechSynthesis' in window) {
         try {
           window.speechSynthesis.cancel();
@@ -926,6 +1032,11 @@
       chipMode: 'sentence',
       pairMode: 'hindi-letters',
       listenMode: 'svar',
+
+      mathMode: 'ginti',
+      gintiRangeIndex: 0,
+      activePahadaNum: 2,
+      isAutoPlayingMath: false,
       
       sentenceQueue: [],
       sentenceIndex: 0,
@@ -1187,6 +1298,42 @@
 
       barakhadiRoots: ['क', 'ख', 'ग', 'घ', 'च', 'छ', 'ज', 'ट', 'ठ', 'ड', 'त', 'थ', 'द', 'ध', 'न', 'प', 'फ', 'ब', 'भ', 'म', 'य', 'र', 'ल', 'व', 'स', 'ह'],
 
+      // COMPLETE 1 TO 100 GINTI
+      ginti100: [
+        { num: 1, hi: 'एक', en: 'One' }, { num: 2, hi: 'दो', en: 'Two' }, { num: 3, hi: 'तीन', en: 'Three' }, { num: 4, hi: 'चार', en: 'Four' }, { num: 5, hi: 'पाँच', en: 'Five' },
+        { num: 6, hi: 'छह', en: 'Six' }, { num: 7, hi: 'सात', en: 'Seven' }, { num: 8, hi: 'आठ', en: 'Eight' }, { num: 9, hi: 'नौ', en: 'Nine' }, { num: 10, hi: 'दस', en: 'Ten' },
+        { num: 11, hi: 'ग्यारह', en: 'Eleven' }, { num: 12, hi: 'बारह', en: 'Twelve' }, { num: 13, hi: 'तेरह', en: 'Thirteen' }, { num: 14, hi: 'चौदह', en: 'Fourteen' }, { num: 15, hi: 'पंद्रह', en: 'Fifteen' },
+        { num: 16, hi: 'सोलह', en: 'Sixteen' }, { num: 17, hi: 'सत्रह', en: 'Seventeen' }, { num: 18, hi: 'अठारह', en: 'Eighteen' }, { num: 19, hi: 'उन्नीस', en: 'Nineteen' }, { num: 20, hi: 'बीस', en: 'Twenty' },
+        { num: 21, hi: 'इक्कीस', en: 'Twenty One' }, { num: 22, hi: 'बाईस', en: 'Twenty Two' }, { num: 23, hi: 'तेईस', en: 'Twenty Three' }, { num: 24, hi: 'चौबीस', en: 'Twenty Four' }, { num: 25, hi: 'पच्चीस', en: 'Twenty Five' },
+        { num: 26, hi: 'छब्बीस', en: 'Twenty Six' }, { num: 27, hi: 'सत्ताईस', en: 'Twenty Seven' }, { num: 28, hi: 'अट्ठाईस', en: 'Twenty Eight' }, { num: 29, hi: 'उनतीस', en: 'Twenty Nine' }, { num: 30, hi: 'तीस', en: 'Thirty' },
+        { num: 31, hi: 'इकत्तीस', en: 'Thirty One' }, { num: 32, hi: 'बत्तीस', en: 'Thirty Two' }, { num: 33, hi: 'तैंतीस', en: 'Thirty Three' }, { num: 34, hi: 'चौंतीस', en: 'Thirty Four' }, { num: 35, hi: 'पैंतीस', en: 'Thirty Five' },
+        { num: 36, hi: 'छत्तीस', en: 'Thirty Six' }, { num: 37, hi: 'सैंतीस', en: 'Thirty Seven' }, { num: 38, hi: 'अड़तीस', en: 'Thirty Eight' }, { num: 39, hi: 'उनतालीस', en: 'Thirty Nine' }, { num: 40, hi: 'चालीस', en: 'Forty' },
+        { num: 41, hi: 'इकतालीस', en: 'Forty One' }, { num: 42, hi: 'बयालीस', en: 'Forty Two' }, { num: 43, hi: 'तैंतालीस', en: 'Forty Three' }, { num: 44, hi: 'चवालीस', en: 'Forty Four' }, { num: 45, hi: 'पैंतालीस', en: 'Forty Five' },
+        { num: 46, hi: 'छियालीस', en: 'Forty Six' }, { num: 47, hi: 'सैंतालीस', en: 'Forty Seven' }, { num: 48, hi: 'अड़तालीस', en: 'Forty Eight' }, { num: 49, hi: 'उनचास', en: 'Forty Nine' }, { num: 50, hi: 'पचास', en: 'Fifty' },
+        { num: 51, hi: 'इक्यावन', en: 'Fifty One' }, { num: 52, hi: 'बावन', en: 'Fifty Two' }, { num: 53, hi: 'तिरेपन', en: 'Fifty Three' }, { num: 54, hi: 'चौवन', en: 'Fifty Four' }, { num: 55, hi: 'पचपन', en: 'Fifty Five' },
+        { num: 56, hi: 'छप्पन', en: 'Fifty Six' }, { num: 57, hi: 'सत्तावन', en: 'Fifty Seven' }, { num: 58, hi: 'अट्ठावन', en: 'Fifty Eight' }, { num: 59, hi: 'उनसठ', en: 'Fifty Nine' }, { num: 60, hi: 'साठ', en: 'Sixty' },
+        { num: 61, hi: 'इकसठ', en: 'Sixty One' }, { num: 62, hi: 'बासठ', en: 'Sixty Two' }, { num: 63, hi: 'तिरसठ', en: 'Sixty Three' }, { num: 64, hi: 'चौंसठ', en: 'Sixty Four' }, { num: 65, hi: 'पैंसठ', en: 'Sixty Five' },
+        { num: 66, hi: 'छियासठ', en: 'Sixty Six' }, { num: 67, hi: 'सरसठ', en: 'Sixty Seven' }, { num: 68, hi: 'अड़सठ', en: 'Sixty Eight' }, { num: 69, hi: 'उनहत्तर', en: 'Sixty Nine' }, { num: 70, hi: 'सत्तर', en: 'Seventy' },
+        { num: 71, hi: 'इकहत्तर', en: 'Seventy One' }, { num: 72, hi: 'बहत्तर', en: 'Seventy Two' }, { num: 73, hi: 'तिहत्तर', en: 'Seventy Three' }, { num: 74, hi: 'चौहत्तर', en: 'Seventy Four' }, { num: 75, hi: 'पचहत्तर', en: 'Seventy Five' },
+        { num: 76, hi: 'छिहत्तर', en: 'Seventy Six' }, { num: 77, hi: 'सतहत्तर', en: 'Seventy Seven' }, { num: 78, hi: 'अठहत्तर', en: 'Seventy Eight' }, { num: 79, hi: 'उन्नासी', en: 'Seventy Nine' }, { num: 80, hi: 'अस्सी', en: 'Eighty' },
+        { num: 81, hi: 'इक्यासी', en: 'Eighty One' }, { num: 82, hi: 'बयासी', en: 'Eighty Two' }, { num: 83, hi: 'तिरासी', en: 'Eighty Three' }, { num: 84, hi: 'चौरासी', en: 'Eighty Four' }, { num: 85, hi: 'पचासी', en: 'Eighty Five' },
+        { num: 86, hi: 'छियासी', en: 'Eighty Six' }, { num: 87, hi: 'सत्तासी', en: 'Eighty Seven' }, { num: 88, hi: 'अट्ठासी', en: 'Eighty Eight' }, { num: 89, hi: 'नवासी', en: 'Eighty Nine' }, { num: 90, hi: 'नब्बे', en: 'Ninety' },
+        { num: 91, hi: 'इक्यानवे', en: 'Ninety One' }, { num: 92, hi: 'बानवे', en: 'Ninety Two' }, { num: 93, hi: 'तिरानवे', en: 'Ninety Three' }, { num: 94, hi: 'चौरानवे', en: 'Ninety Four' }, { num: 95, hi: 'पंचानवे', en: 'Ninety Five' },
+        { num: 96, hi: 'छियानवे', en: 'Ninety Six' }, { num: 97, hi: 'सत्तानवे', en: 'Ninety Seven' }, { num: 98, hi: 'अट्ठानवे', en: 'Ninety Eight' }, { num: 99, hi: 'निन्यानवे', en: 'Ninety Nine' }, { num: 100, hi: 'एक सौ', en: 'One Hundred' }
+      ],
+
+      // IKAYI DAHAI LAB DATA
+      ikayiDahaiList: [
+        { place: 'इकाई (Ones)', value: '1', desc: '1 अंक (Single Digit)', icon: '🟢', speech: 'इकाई का मतलब एक अंक' },
+        { place: 'दहाई (Tens)', value: '10', desc: '10 का समूह (Group of 10)', icon: '🟡', speech: 'दहाई का मतलब दस का एक समूह' },
+        { place: 'सैकड़ा (Hundreds)', value: '100', desc: '100 का समूह (Group of 100)', icon: '🟠', speech: 'सैकड़ा का मतलब एक सौ' },
+        { place: 'हज़ार (Thousands)', value: '1,000', desc: '1000 का समूह', icon: '🔴', speech: 'हज़ार का मतलब एक हज़ार' },
+        { place: 'दस हज़ार (Ten Thousands)', value: '10,000', desc: '10 हज़ार का समूह', icon: '🟣', speech: 'दस हज़ार' },
+        { place: 'लाख (Lakh / Hundred Thousands)', value: '1,00,000', desc: '1 लाख', icon: '💎', speech: 'एक लाख' },
+        { place: 'दस लाख (Ten Lakhs / Million)', value: '10,00,000', desc: '10 लाख', icon: '👑', speech: 'दस लाख' },
+        { place: 'करोड़ (Crore / Ten Millions)', value: '1,00,00,000', desc: '1 करोड़', icon: '🏆', speech: 'एक करोड़' }
+      ],
+
       sentencesBank: [
         { id: 1, hi: "चिड़िया पेड़ पर गाना गाती है।", en: "The bird sings on the tree.", chips: ["चिड़िया", "पेड़", "पर", "गाना", "गाती", "है"] },
         { id: 2, hi: "Stars twinkle brightly at night.", en: "रात में तारे चमकते हैं।", chips: ["Stars", "twinkle", "brightly", "at", "night"] },
@@ -1303,11 +1450,209 @@
 
       if (catName === 'varnamala') renderAlphabetGrid();
       if (catName === 'matra') renderBarakhadiView();
+      if (catName === 'mathlab') renderMathLabView();
       if (catName === 'chips') loadCurrentChipChallenge();
       if (catName === 'pairs') generateFreshPairBoard();
       if (catName === 'listen') loadListenQuestion();
       if (catName === 'translate') renderQuickTranslateChips();
       if (catName === 'achieve') updateHeaderStatsDisplay();
+    }
+
+    // =========================================================================
+    // MATH LAB: GINTI (1-100), PAHADA (1-20), IKAYI-DAHAI
+    // =========================================================================
+    const gintiRanges = [
+      { label: '1 से 20', start: 1, end: 20 },
+      { label: '21 से 40', start: 21, end: 40 },
+      { label: '41 से 60', start: 41, end: 60 },
+      { label: '61 से 80', start: 61, end: 80 },
+      { label: '81 से 100', start: 81, end: 100 },
+      { label: '1 से 100 (सभी)', start: 1, end: 100 }
+    ];
+
+    function switchMathSubTab(mode) {
+      AppState.mathMode = mode;
+      ['ginti', 'pahada', 'ikayi'].forEach(m => {
+        const btn = document.getElementById(`btn-math-${m}`);
+        if (btn) btn.className = "py-2 text-[11px] font-black rounded-xl text-slate-600";
+      });
+      document.getElementById(`btn-math-${mode}`).className = "py-2 text-[11px] font-black rounded-xl bg-white shadow-sm text-orange-700";
+
+      document.getElementById('math-ginti-container').classList.add('hidden');
+      document.getElementById('math-pahada-container').classList.add('hidden');
+      document.getElementById('math-ikayi-container').classList.add('hidden');
+
+      const topAction = document.getElementById('btn-math-top-action');
+
+      if (mode === 'ginti') {
+        document.getElementById('math-ginti-container').classList.remove('hidden');
+        document.getElementById('math-banner-title').innerText = "1 से 100 तक गिनती सीखें";
+        document.getElementById('math-banner-sub').innerText = "संख्या पर टैप करें और उच्चारण सुनें";
+        document.getElementById('math-banner-icon').innerText = "🔢";
+        topAction.classList.remove('hidden');
+        topAction.innerHTML = "<span>🔊</span> सब सुनें";
+        renderGintiGrid();
+      } else if (mode === 'pahada') {
+        document.getElementById('math-pahada-container').classList.remove('hidden');
+        document.getElementById('math-banner-title').innerText = "1 से 20 तक पहाड़ा (Tables)";
+        document.getElementById('math-banner-sub').innerText = "पहाड़ा चुनें और लय के साथ याद करें";
+        document.getElementById('math-banner-icon').innerText = "✖️";
+        topAction.classList.remove('hidden');
+        topAction.innerHTML = "<span>🔊</span> पूरा पहाड़ा";
+        renderPahadaView();
+      } else {
+        document.getElementById('math-ikayi-container').classList.remove('hidden');
+        document.getElementById('math-banner-title').innerText = "इकाई, दहाई, सैकड़ा, हज़ार";
+        document.getElementById('math-banner-sub').innerText = "स्थान मान को समझें और सुनें";
+        document.getElementById('math-banner-icon').innerText = "🧮";
+        topAction.classList.add('hidden');
+        renderIkayiDahaiView();
+      }
+    }
+
+    function renderMathLabView() {
+      switchMathSubTab(AppState.mathMode || 'ginti');
+    }
+
+    function renderGintiGrid() {
+      const scroller = document.getElementById('ginti-range-scroller');
+      scroller.innerHTML = '';
+
+      gintiRanges.forEach((range, idx) => {
+        const btn = document.createElement('button');
+        const isActive = (idx === AppState.gintiRangeIndex);
+        btn.className = `px-3 py-1.5 rounded-xl text-xs font-black whitespace-nowrap ${isActive ? 'bg-orange-600 text-white shadow-md' : 'bg-white text-slate-700 border-2 border-orange-200'}`;
+        btn.innerText = range.label;
+        btn.onclick = () => {
+          AppState.gintiRangeIndex = idx;
+          renderGintiGrid();
+        };
+        scroller.appendChild(btn);
+      });
+
+      const currentRange = gintiRanges[AppState.gintiRangeIndex];
+      const items = DataStore.ginti100.filter(x => x.num >= currentRange.start && x.num <= currentRange.end);
+
+      const grid = document.getElementById('ginti-grid');
+      grid.innerHTML = '';
+
+      items.forEach(item => {
+        const card = document.createElement('div');
+        card.className = "card-3d p-2 flex flex-col items-center justify-center text-center cursor-pointer bg-white hover:border-orange-400";
+        card.innerHTML = `
+          <span class="text-2xl font-black text-orange-600">${item.num}</span>
+          <span class="text-[12px] font-extrabold text-slate-800 leading-tight mt-0.5">${item.hi}</span>
+          <span class="text-[9px] font-bold text-slate-400">${item.en}</span>
+        `;
+        card.onclick = () => {
+          AudioFX.pop();
+          speakText(`${item.num}, ${item.hi}`, 'hi-IN');
+        };
+        grid.appendChild(card);
+      });
+    }
+
+    function renderPahadaView() {
+      const scroller = document.getElementById('pahada-selector-scroller');
+      scroller.innerHTML = '';
+
+      for (let n = 1; n <= 20; n++) {
+        const btn = document.createElement('button');
+        const isActive = (n === AppState.activePahadaNum);
+        btn.className = `px-3 py-1.5 rounded-xl font-black text-sm whitespace-nowrap ${isActive ? 'bg-orange-600 text-white shadow-md' : 'bg-white text-slate-700 border-2 border-orange-200'}`;
+        btn.innerText = `${n} का पहाड़ा`;
+        btn.onclick = () => {
+          AppState.activePahadaNum = n;
+          renderPahadaView();
+          speakText(`${n} का पहाड़ा`, 'hi-IN');
+        };
+        scroller.appendChild(btn);
+      }
+
+      const grid = document.getElementById('pahada-grid');
+      grid.innerHTML = '';
+      const num = AppState.activePahadaNum;
+
+      const hindiMultipliers = ['एकम', 'दूनी', 'तिया', 'चौके', 'पंचे', 'छक्के', 'सत्ते', 'अट्ठे', 'नवा', 'दहाम'];
+
+      for (let i = 1; i <= 10; i++) {
+        const prod = num * i;
+        const phrase = `${num} ${hindiMultipliers[i - 1]} ${prod}`;
+
+        const card = document.createElement('div');
+        card.className = "card-3d p-2.5 flex items-center justify-between cursor-pointer bg-white hover:border-orange-400";
+        card.innerHTML = `
+          <div>
+            <span class="text-xs font-bold text-slate-400">${num} × ${i}</span>
+            <div class="text-sm font-black text-slate-800">${num} ${hindiMultipliers[i - 1]}</div>
+          </div>
+          <div class="text-xl font-black text-orange-600 bg-orange-50 px-2 py-0.5 rounded-xl border border-orange-200">
+            = ${prod}
+          </div>
+        `;
+        card.onclick = () => {
+          AudioFX.pop();
+          speakText(phrase, 'hi-IN');
+        };
+        grid.appendChild(card);
+      }
+    }
+
+    function renderIkayiDahaiView() {
+      const container = document.getElementById('ikayi-cards-list');
+      container.innerHTML = '';
+
+      DataStore.ikayiDahaiList.forEach(item => {
+        const card = document.createElement('div');
+        card.className = "card-3d p-3 flex items-center justify-between cursor-pointer bg-white hover:border-orange-400";
+        card.innerHTML = `
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-xl bg-orange-100 flex items-center justify-center text-xl font-black">
+              ${item.icon}
+            </div>
+            <div>
+              <h4 class="text-sm font-black text-slate-800">${item.place}</h4>
+              <p class="text-[11px] font-bold text-slate-400">${item.desc}</p>
+            </div>
+          </div>
+          <div class="text-right">
+            <span class="text-sm font-black text-orange-600 block">${item.value}</span>
+            <span class="text-[10px] bg-orange-100 text-orange-800 px-2 py-0.5 rounded-full font-bold">🔊 सुनें</span>
+          </div>
+        `;
+        card.onclick = () => {
+          AudioFX.pop();
+          speakText(`${item.place}, मान है ${item.value}. ${item.speech}`, 'hi-IN');
+        };
+        container.appendChild(card);
+      });
+    }
+
+    function handleMathActionTopBtn() {
+      if (AppState.mathMode === 'ginti') {
+        const currentRange = gintiRanges[AppState.gintiRangeIndex];
+        const items = DataStore.ginti100.filter(x => x.num >= currentRange.start && x.num <= currentRange.end);
+        let idx = 0;
+        function speakNextGinti() {
+          if (idx >= items.length) return;
+          speakText(`${items[idx].num}, ${items[idx].hi}`, 'hi-IN');
+          idx++;
+          setTimeout(speakNextGinti, 1100);
+        }
+        speakNextGinti();
+      } else if (AppState.mathMode === 'pahada') {
+        const num = AppState.activePahadaNum;
+        const hindiMultipliers = ['एकम', 'दूनी', 'तिया', 'चौके', 'पंचे', 'छक्के', 'सत्ते', 'अट्ठे', 'नवा', 'दहाम'];
+        let step = 1;
+        function speakNextStep() {
+          if (step > 10) return;
+          const phrase = `${num} ${hindiMultipliers[step - 1]} ${num * step}`;
+          speakText(phrase, 'hi-IN');
+          step++;
+          setTimeout(speakNextStep, 1300);
+        }
+        speakNextStep();
+      }
     }
 
     function switchAlphabetTab(mode) {
