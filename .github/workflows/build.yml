@@ -43,8 +43,9 @@ jobs:
 
         echo "android.suppressUnsupportedCompileSdk=36" >> android/gradle.properties
 
-        sed -i 's/versionCode 1/versionCode 1/g' android/app/build.gradle
-        sed -i 's/versionName "1.0"/versionName "1.0.0"/g' android/app/build.gradle
+        # Version code update: 1 -> 2 aur Version name: 1.0.0 -> 2.0.0
+        sed -i 's/versionCode [0-9]*/versionCode 2/g' android/app/build.gradle
+        sed -i 's/versionName ".*"/versionName "2.0.0"/g' android/app/build.gradle
 
         # 2. Inject App Icon safely
         if [ -f "logo.png" ]; then
