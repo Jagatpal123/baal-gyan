@@ -36,14 +36,17 @@ jobs:
 
     - name: Configure Permissions, Native Android TTS & AdMob
       run: |
-        # 1. SDK Settings
+        # 1. Force Exact Package Name required by Play Console
+        sed -i 's/applicationId .*/applicationId "com.jagatpal.balgyanultra"/' android/app/build.gradle
+        
+        # SDK Settings
         sed -i 's/minSdkVersion = .*/minSdkVersion = 24/' android/variables.gradle
         sed -i 's/compileSdkVersion = .*/compileSdkVersion = 36/' android/variables.gradle
         sed -i 's/targetSdkVersion = .*/targetSdkVersion = 36/' android/variables.gradle
 
         echo "android.suppressUnsupportedCompileSdk=36" >> android/gradle.properties
 
-        # Version code update: 1 -> 2 aur Version name: 1.0.0 -> 2.0.0
+        # Version code: 2 aur Version name: 2.0.0
         sed -i 's/versionCode [0-9]*/versionCode 2/g' android/app/build.gradle
         sed -i 's/versionName ".*"/versionName "2.0.0"/g' android/app/build.gradle
 
