@@ -1,4 +1,4 @@
-name: Build Signed Carrom APK and Production AAB
+name: Build Test APK and Production AAB
 
 on:
   push:
@@ -22,35 +22,31 @@ jobs:
     - name: Set up Node.js
       uses: actions/setup-node@v4
       with:
-        node-version: 20
+        node-version: 18
 
     - name: Install dependencies
       run: |
-        npm install --legacy-peer-deps || npm install
-
-    - name: Prepare Web Assets
-      run: |
-        mkdir -p www
-        cp index.html www/index.html
-        if [ -f "logo.png" ]; then
-          cp logo.png www/logo.png
-        fi
+        npm install --legacy-peer-deps
+        npm run build
 
     - name: Setup Capacitor Android
       run: |
         npx cap add android || true
         npx cap sync android
 
-    - name: Configure Package, AdMob & App Icons
+    - name: Configure Permissions, Native Android TTS & AdMob
       run: |
-        # 1. Force Exact Package Name
-        sed -i 's/applicationId .*/applicationId "com.jagatpal.carrompool"/' android/app/build.gradle
-        
-        # 2. Version Code & Version Name
-        sed -i 's/versionCode [0-9]*/versionCode 1/g' android/app/build.gradle
-        sed -i 's/versionName ".*"/versionName "1.0.0"/g' android/app/build.gradle
+        # 1. SDK Settings
+        sed -i 's/minSdkVersion = .*/minSdkVersion = 24/' android/variables.gradle
+        sed -i 's/compileSdkVersion = .*/compileSdkVersion = 36/' android/variables.gradle
+        sed -i 's/targetSdkVersion = .*/targetSdkVersion = 36/' android/variables.gradle
 
-        # 3. Inject App Icon Safely
+        echo "android.suppressUnsupportedCompileSdk=36" >> android/gradle.properties
+
+        sed -i 's/versionCode 1/versionCode 1/g' android/app/build.gradle
+        sed -i 's/versionName "1.0"/versionName "1.0.0"/g' android/app/build.gradle
+
+        # 2. Inject App Icon safely
         if [ -f "logo.png" ]; then
           rm -rf android/app/src/main/res/mipmap-anydpi-v26
           for dir in android/app/src/main/res/mipmap-hdpi android/app/src/main/res/mipmap-mdpi android/app/src/main/res/mipmap-xhdpi android/app/src/main/res/mipmap-xxhdpi android/app/src/main/res/mipmap-xxxhdpi; do
@@ -61,28 +57,106 @@ jobs:
           done
         fi
 
-        # 4. Permissions in Manifest
-        sed -i '/<manifest/a \    <uses-permission android:name="android.permission.INTERNET" />\n    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />' android/app/src/main/AndroidManifest.xml
+        # 3. Android Permissions in Manifest
+        sed -i '/<manifest/a \    <uses-permission android:name="android.permission.INTERNET" />\n    <uses-permission android:name="android.permission.RECORD_AUDIO" />\n    <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />' android/app/src/main/AndroidManifest.xml
 
-        # 5. AdMob App ID Injection
-        sed -i '/<\/application>/i \        <meta-data android:name="com.google.android.gms.ads.APPLICATION_ID" android:value="ca-app-pub-6302105448775587~3166646352"\/>' android/app/src/main/AndroidManifest.xml
+        # 4. AdMob App ID
+        sed -i '/<\/application>/i \        <meta-data android:name="com.google.android.gms.ads.APPLICATION_ID" android:value="ca-app-pub-6302105448775587~3000039098"\/>' android/app/src/main/AndroidManifest.xml
 
-    # --- STEP A: TEST AD WALI SIGNED APK BANANA ---
+        # 5. Overhaul MainActivity.java to inject Hardware Native Android TTS Bridge & WebChromeClient
+        cat << 'EOF' > android/app/src/main/java/com/jagatpal/balgyanultra/MainActivity.java
+        package com.jagatpal.balgyanultra;
+
+        import android.os.Bundle;
+        import android.webkit.JavascriptInterface;
+        import android.webkit.PermissionRequest;
+        import android.webkit.WebChromeClient;
+        import android.webkit.WebView;
+        import android.speech.tts.TextToSpeech;
+        import androidx.core.app.ActivityCompat;
+        import androidx.core.content.ContextCompat;
+        import android.content.pm.PackageManager;
+        import android.Manifest;
+        import java.util.Locale;
+        import com.getcapacitor.BridgeActivity;
+
+        public class MainActivity extends BridgeActivity {
+            private TextToSpeech tts;
+
+            @Override
+            public void onCreate(Bundle savedInstanceState) {
+                super.onCreate(savedInstanceState);
+
+                // Hardware TTS Engine Initialization
+                tts = new TextToSpeech(this, status -> {
+                    if (status != TextToSpeech.ERROR) {
+                        tts.setLanguage(new Locale("hi", "IN"));
+                    }
+                });
+
+                if (ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
+                    ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.RECORD_AUDIO}, 101);
+                }
+
+                WebView webView = getBridge().getWebView();
+                webView.getSettings().setMediaPlaybackRequiresUserGesture(false);
+                webView.getSettings().setJavaScriptEnabled(true);
+
+                // Native Android Speech Bridge directly connected to phone speaker
+                webView.addJavascriptInterface(new Object() {
+                    @JavascriptInterface
+                    public void speak(String text, String lang) {
+                        if (tts != null) {
+                            if (lang != null && lang.startsWith("en")) {
+                                tts.setLanguage(Locale.US);
+                            } else {
+                                tts.setLanguage(new Locale("hi", "IN"));
+                            }
+                            tts.speak(text, TextToSpeech.QUEUE_FLUSH, null, "BG_TTS");
+                        }
+                    }
+                }, "AndroidTTS");
+
+                webView.setWebChromeClient(new WebChromeClient() {
+                    @Override
+                    public void onPermissionRequest(final PermissionRequest request) {
+                        runOnUiThread(() -> request.grant(request.getResources()));
+                    }
+                });
+            }
+
+            @Override
+            public void onDestroy() {
+                if (tts != null) {
+                    tts.stop();
+                    tts.shutdown();
+                }
+                super.onDestroy();
+            }
+        }
+        EOF
+
+    # --- STEP A: TEST AD WALI APK BANANA ---
     - name: Prepare, Build and Sign Test-Ad APK
       run: |
+        sed -i 's/ca-app-pub-6302105448775587\/9146645040/ca-app-pub-3940256099942544\/6300978111/g' android/app/src/main/assets/public/index.html
+        sed -i 's/ca-app-pub-6302105448775587\/2277984366/ca-app-pub-3940256099942544\/5224354917/g' android/app/src/main/assets/public/index.html
+        sed -i 's/isTesting: false/isTesting: true/g' android/app/src/main/assets/public/index.html
+
         cd android
         chmod +x gradlew
         ./gradlew assembleRelease
 
         BUILD_TOOLS_DIR=$(ls -d $ANDROID_HOME/build-tools/* | tail -1)
         $BUILD_TOOLS_DIR/zipalign -v -p 4 app/build/outputs/apk/release/app-release-unsigned.apk app/build/outputs/apk/release/app-aligned.apk
-        $BUILD_TOOLS_DIR/apksigner sign --ks ../release.keystore --ks-key-alias bhakti --ks-pass pass:Jagatpal@2026 --key-pass pass:Jagatpal@2026 --out app/build/outputs/apk/release/CarromPool-TestAds.apk app/build/outputs/apk/release/app-aligned.apk
+        $BUILD_TOOLS_DIR/apksigner sign --ks ../release.keystore --ks-key-alias bhakti --ks-pass pass:Jagatpal@2026 --key-pass pass:Jagatpal@2026 --out app/build/outputs/apk/release/BalGyan-TestAds.apk app/build/outputs/apk/release/app-aligned.apk
 
-    # --- STEP B: PRODUCTION REAL AD WALI SIGNED AAB BANANA ---
+    # --- STEP B: PRODUCTION REAL AD WALI AAB BANANA ---
     - name: Prepare, Build and Sign Production AAB
       run: |
-        sed -i 's/window.IS_RELEASE_BUILD === true/true/g' www/index.html
-        npx cap copy android
+        sed -i 's/ca-app-pub-3940256099942544\/6300978111/ca-app-pub-6302105448775587\/9146645040/g' android/app/src/main/assets/public/index.html
+        sed -i 's/ca-app-pub-3940256099942544\/5224354917/ca-app-pub-6302105448775587\/2277984366/g' android/app/src/main/assets/public/index.html
+        sed -i 's/isTesting: true/isTesting: false/g' android/app/src/main/assets/public/index.html
 
         cd android
         ./gradlew bundleRelease
@@ -92,11 +166,11 @@ jobs:
     - name: Upload Test APK
       uses: actions/upload-artifact@v4
       with:
-        name: CarromPool-TestAds-APK
-        path: android/app/build/outputs/apk/release/CarromPool-TestAds.apk
+        name: BalGyan-TestAds-APK
+        path: android/app/build/outputs/apk/release/BalGyan-TestAds.apk
 
     - name: Upload Production Real-Ad AAB
       uses: actions/upload-artifact@v4
       with:
-        name: CarromPool-Production-RealAds-AAB
+        name: BalGyan-Production-RealAds-AAB
         path: android/app/build/outputs/bundle/release/app-release.aab
