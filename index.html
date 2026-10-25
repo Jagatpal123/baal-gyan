@@ -2,7 +2,7 @@
 <html lang="hi">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title>बाल ज्ञान प्रो Ultra - Kids Master Hub</title>
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -14,6 +14,12 @@
   <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;600;700;800&family=Nunito:wght@400;700;800;900&display=swap" rel="stylesheet">
 
   <style>
+    :root {
+      /* कैमरा नॉच और स्टेटस बार सुरक्षा */
+      --safe-top: env(safe-area-inset-top, 24px);
+      --safe-bottom: env(safe-area-inset-bottom, 16px);
+    }
+
     * {
       box-sizing: border-box;
       -webkit-tap-highlight-color: transparent;
@@ -24,6 +30,11 @@
       user-select: none;
       -webkit-user-select: none;
       touch-action: manipulation;
+    }
+
+    /* कैमरा नॉच से नीचे रखने के लिए टॉप हेडर पैडिंग */
+    .notch-safe-header {
+      padding-top: calc(var(--safe-top) + 8px) !important;
     }
 
     /* 3D Tactile Buttons */
@@ -161,19 +172,31 @@
     .animate-fade-in {
       animation: fadeInModal 0.25s ease-out forwards;
     }
+
+    /* Google Families Policy Ad Tag Badge */
+    .ad-policy-badge {
+      background-color: #1e293b;
+      color: #facc15;
+      font-size: 9px;
+      font-weight: 900;
+      padding: 1px 4px;
+      border-radius: 4px;
+      letter-spacing: 0.5px;
+      line-height: 1;
+    }
   </style>
 </head>
-<body class="bg-amber-50 text-slate-800 min-h-screen flex flex-col pb-44 select-none">
+<body class="bg-amber-50 text-slate-800 min-h-screen flex flex-col pb-48 select-none">
 
   <!-- ================= WELCOME SCREEN OVERLAY ================= -->
-  <div id="welcome-screen" class="fixed inset-0 z-50 bg-gradient-to-b from-sky-400 via-teal-400 to-emerald-500 flex flex-col items-center justify-between p-6 transition-all duration-300">
+  <div id="welcome-screen" class="fixed inset-0 z-50 bg-gradient-to-b from-sky-400 via-teal-400 to-emerald-500 flex flex-col items-center justify-between p-6 transition-all duration-300" style="padding-top: calc(var(--safe-top) + 16px);">
     <div class="w-full flex items-center justify-between text-white text-xs font-black">
       <span class="bg-white/20 backdrop-blur-md px-3 py-1 rounded-full border border-white/30">✨ भारत का अपना किड्स ऐप</span>
       <span class="bg-white/20 backdrop-blur-md px-3 py-1 rounded-full border border-white/30">v2.0 Ultra</span>
     </div>
 
     <div class="flex flex-col items-center text-center animate-fade-in my-auto w-full max-w-sm">
-      <div class="relative w-56 h-56 sm:w-64 sm:h-64 mb-4 animate-float flex items-center justify-center">
+      <div class="relative w-52 h-52 sm:w-64 sm:h-64 mb-4 animate-float flex items-center justify-center">
         <div class="absolute inset-0 bg-yellow-300/40 rounded-full blur-2xl"></div>
         <img src="logo.png" alt="बाल ज्ञान प्रो Ultra Logo" class="relative w-full h-full object-contain drop-shadow-2xl rounded-3xl border-4 border-white/80 shadow-2xl" onerror="this.src='https://cdn-icons-png.flaticon.com/512/3815/3815321.png'">
       </div>
@@ -194,8 +217,8 @@
     </div>
   </div>
 
-  <!-- ================= TOP HEADER ================= -->
-  <header class="sticky top-0 z-30 bg-white border-b-4 border-amber-200 shadow-sm px-3 py-2 flex items-center justify-between">
+  <!-- ================= TOP HEADER (NOTCH SAFE & FAMILIES COMPLIANT) ================= -->
+  <header class="sticky top-0 z-30 bg-white border-b-4 border-amber-200 shadow-sm px-3 pb-2.5 notch-safe-header flex items-center justify-between">
     <div class="flex items-center gap-2 cursor-pointer" onclick="goToHomeScreen()">
       <img src="logo.png" alt="App Logo" class="w-10 h-10 rounded-xl object-contain border-2 border-amber-200 shadow-sm" onerror="this.src='https://cdn-icons-png.flaticon.com/512/3815/3815321.png'">
       <div>
@@ -204,18 +227,19 @@
       </div>
     </div>
 
-    <!-- Stats -->
+    <!-- Stats & Families Policy Ad-Tagged Heart Button -->
     <div class="flex items-center gap-1.5 sm:gap-2">
-      <button onclick="openHeartsModal()" class="flex items-center bg-rose-50 border-2 border-rose-300 rounded-full px-2 py-0.5 text-xs font-black text-rose-600 shadow-sm active:scale-95">
-        <span class="heart-pulse text-sm">❤</span>
-        <span id="stat-hearts" class="ml-1">5</span>/5
+      <button onclick="openHeartsModal()" class="flex items-center gap-1 bg-rose-50 border-2 border-rose-300 rounded-full px-2 py-1 text-xs font-black text-rose-600 shadow-sm active:scale-95">
+        <span class="ad-policy-badge">AD</span>
+        <span class="heart-pulse text-sm leading-none">❤</span>
+        <span id="stat-hearts">5</span>/5
       </button>
 
-      <div class="flex items-center bg-orange-100 border-2 border-orange-300 rounded-full px-2 py-0.5 text-xs font-black text-orange-600 shadow-sm">
+      <div class="flex items-center bg-orange-100 border-2 border-orange-300 rounded-full px-2 py-1 text-xs font-black text-orange-600 shadow-sm">
         🔥 <span id="stat-streak" class="ml-1">3</span>
       </div>
 
-      <div class="flex items-center bg-blue-100 border-2 border-blue-300 rounded-full px-2 py-0.5 text-xs font-black text-blue-600 shadow-sm">
+      <div class="flex items-center bg-blue-100 border-2 border-blue-300 rounded-full px-2 py-1 text-xs font-black text-blue-600 shadow-sm">
         💎 <span id="stat-gems" class="ml-1">120</span>
       </div>
 
@@ -225,20 +249,22 @@
     </div>
   </header>
 
-  <!-- ================= HEARTS REFILL MODAL ================= -->
+  <!-- ================= HEARTS REFILL MODAL (FAMILIES COMPLIANT - +2 HEARTS) ================= -->
   <div id="hearts-modal" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm hidden flex items-center justify-center p-4">
     <div class="bg-white border-4 border-rose-300 rounded-3xl p-5 max-w-sm w-full shadow-2xl flex flex-col items-center text-center gap-3">
       <div class="w-16 h-16 rounded-full bg-rose-100 flex items-center justify-center text-4xl shadow-inner heart-pulse">
         ❤️
       </div>
-      <h3 class="text-xl font-black text-slate-800">हार्ट्स रिफिल करें!</h3>
+      <h3 class="text-xl font-black text-slate-800">हार्ट्स रीफिल करें!</h3>
       <p class="text-xs font-bold text-slate-500">
         खेलने और सीखने के लिए हार्ट्स की ज़रूरत होती है। आपके पास 
         <span id="modal-hearts-count" class="font-black text-rose-600">5</span> हार्ट्स हैं।
       </p>
 
+      <!-- Google Policy Compliant Ad Button: Rewarded Ad Gives +2 Hearts -->
       <button onclick="triggerRewardedAdForHearts()" id="btn-rewarded-ad" class="w-full btn-3d btn-rose py-3 px-4 rounded-2xl font-black text-sm flex items-center justify-center gap-2">
-        <span>🎬</span> 5❤ पायें (मुफ़्त वीडियो देखें)
+        <span class="ad-policy-badge">AD</span>
+        <span>🎬</span> 2❤ पायें (मुफ़्त वीडियो विज्ञापन)
       </button>
 
       <button onclick="refillHeartsWithGems()" class="w-full btn-3d btn-blue py-3 px-4 rounded-2xl font-black text-sm flex items-center justify-center gap-2">
@@ -311,7 +337,7 @@
           <span class="text-slate-400 font-black text-xl">➔</span>
         </div>
 
-        <!-- NEW CATEGORY: GINTI, PAHADA & IKAYI-DAHAI -->
+        <!-- CATEGORY: GINTI, PAHADA & IKAYI-DAHAI -->
         <div onclick="navigateCategory('mathlab')" class="card-3d p-3.5 flex items-center justify-between cursor-pointer border-orange-200 hover:border-orange-400">
           <div class="flex items-center gap-3">
             <div class="w-12 h-12 rounded-2xl bg-orange-100 text-orange-600 flex items-center justify-center text-2xl font-black">🔢</div>
@@ -543,7 +569,7 @@
       </div>
     </section>
 
-    <!-- VIEW 3: चिप्स वाक्य व शब्द -->
+    <!-- VIEW 3: चिप्स वाक्य व शब्द (COMPLIANT HINT BUTTON & AUTO-SELECTION) -->
     <section id="view-chips" class="tab-view hidden flex flex-col gap-3 relative pb-4">
       <div class="flex items-center justify-between">
         <button onclick="goToHomeScreen()" class="btn-3d bg-white border-2 border-slate-300 text-slate-700 px-3 py-1.5 rounded-xl text-xs font-black flex items-center gap-1 shadow-sm">
@@ -596,20 +622,21 @@
           <span class="text-xs font-bold text-slate-400 mx-auto select-none pointer-events-none" id="tray-placeholder">नीचे दिए गए चिप्स को टैप करें...</span>
         </div>
 
-        <!-- Available Chips Pool (Guaranteed Jumbled Order) -->
+        <!-- Available Chips Pool -->
         <div class="pt-2 border-t border-slate-100">
           <span class="text-[11px] font-black text-slate-400 block mb-1.5">उपलब्ध चिप्स (टैप करें):</span>
           <div id="chip-source-pool" class="flex flex-wrap gap-2 justify-center"></div>
         </div>
 
-        <!-- Action Controls -->
+        <!-- Action Controls with AD Tagged Hint -->
         <div class="flex gap-2 pt-2">
           <button onclick="clearCurrentTray()" class="btn-3d bg-rose-100 border-2 border-rose-300 text-rose-700 px-3 py-2.5 rounded-2xl text-xs font-black flex-1">
             🗑 रीसेट
           </button>
           
-          <button onclick="giveChipHint()" class="btn-3d btn-yellow px-3 py-2.5 rounded-2xl text-xs font-black flex-1 flex items-center justify-center gap-1">
-            💡 संकेत (Hint)
+          <button onclick="giveChipHint()" class="btn-3d btn-yellow px-2 py-2.5 rounded-2xl text-xs font-black flex-1 flex items-center justify-center gap-1">
+            <span class="ad-policy-badge">AD</span>
+            <span>💡 संकेत</span>
           </button>
           
           <button onclick="handleChipMainButtonClick()" id="btn-chip-main-action" class="btn-3d btn-green px-5 py-2.5 rounded-2xl text-sm font-black flex-[2]">
@@ -680,7 +707,7 @@
       <div id="listen-options-grid" class="grid grid-cols-2 gap-3 pt-1"></div>
 
       <!-- CONFIRMATION BANNER IN CHUNO-SUNO -->
-      <div id="listen-confirm-banner" class="hidden fixed bottom-14 left-0 right-0 max-w-lg mx-auto p-3 z-50 animate-slide-up">
+      <div id="listen-confirm-banner" class="hidden fixed bottom-24 left-0 right-0 max-w-lg mx-auto p-3 z-50 animate-slide-up">
         <div id="listen-banner-card" class="rounded-2xl border-4 border-emerald-400 p-3.5 shadow-2xl flex items-center justify-between bg-emerald-50">
           <div class="flex items-center gap-3">
             <div id="listen-banner-icon" class="w-12 h-12 rounded-2xl bg-emerald-500 text-white flex items-center justify-center text-2xl font-black shadow-md flex-shrink-0">
@@ -817,32 +844,38 @@
 
   </main>
 
+  <!-- ================= FIXED BOTTOM AD CONTAINER (FAMILIES POLICY COMPLIANT) ================= -->
+  <div id="families-ad-wrapper" class="fixed bottom-14 left-0 right-0 z-30 bg-amber-100/90 border-t border-amber-300 text-center py-1 max-w-lg mx-auto">
+    <span class="text-[10px] font-black text-slate-500 uppercase tracking-widest block">Advertisement</span>
+    <div id="banner-ad-box" style="min-height: 50px;"></div>
+  </div>
+
   <!-- ================= BOTTOM NAVIGATION BAR ================= -->
-  <nav class="fixed bottom-0 left-0 right-0 z-40 bg-white border-t-4 border-amber-200 px-3 py-2 shadow-lg max-w-lg mx-auto">
+  <nav class="fixed bottom-0 left-0 right-0 z-40 bg-white border-t-4 border-amber-200 px-3 py-1.5 shadow-lg max-w-lg mx-auto" style="padding-bottom: calc(var(--safe-bottom) + 4px);">
     <div class="grid grid-cols-4 gap-1 text-center">
       <button onclick="goToHomeScreen()" id="nav-btn-home" class="nav-tab-btn flex flex-col items-center py-1 text-emerald-600">
-        <span class="text-xl">🏠</span>
+        <span class="text-xl leading-tight">🏠</span>
         <span class="text-[10px] font-black mt-0.5">होम</span>
       </button>
 
       <button onclick="navigateCategory('chips')" id="nav-btn-chips" class="nav-tab-btn flex flex-col items-center py-1 text-slate-400">
-        <span class="text-xl">🧩</span>
+        <span class="text-xl leading-tight">🧩</span>
         <span class="text-[10px] font-black mt-0.5">चिप्स</span>
       </button>
 
       <button onclick="navigateCategory('pairs')" id="nav-btn-pairs" class="nav-tab-btn flex flex-col items-center py-1 text-slate-400">
-        <span class="text-xl">🃏</span>
+        <span class="text-xl leading-tight">🃏</span>
         <span class="text-[10px] font-black mt-0.5">जोड़े</span>
       </button>
 
       <button onclick="navigateCategory('translate')" id="nav-btn-translate" class="nav-tab-btn flex flex-col items-center py-1 text-slate-400">
-        <span class="text-xl">🌐</span>
+        <span class="text-xl leading-tight">🌐</span>
         <span class="text-[10px] font-black mt-0.5">अनुवाद</span>
       </button>
     </div>
   </nav>
 
-  <!-- ================= ADMOB NATIVE INTEGRATION ENGINE (FAMILIES POLICY COMPLIANT) ================= -->
+  <!-- ================= ADMOB NATIVE INTEGRATION ENGINE (FAMILIES COMPLIANT) ================= -->
   <script>
     const AdConfig = {
       bannerId: 'ca-app-pub-6302105448775587/9146645040',
@@ -856,7 +889,6 @@
         if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.AdMob) {
           try {
             const { AdMob } = window.Capacitor.Plugins;
-            // Google Play Families Policy: Tag for Child Directed Treatment & Max Rating G
             await AdMob.initialize({
               testingDevices: [],
               initializeForTesting: false,
@@ -879,7 +911,7 @@
               adId: AdConfig.bannerId,
               adSize: BannerAdSize ? BannerAdSize.BANNER : 'BANNER',
               position: BannerAdPosition ? BannerAdPosition.BOTTOM_CENTER : 'BOTTOM_CENTER',
-              margin: 60,
+              margin: 62,
               isTesting: false,
               tagForChildDirectedTreatment: true,
               maxAdContentRating: 'G'
@@ -951,9 +983,6 @@
 
   <!-- ================= JAVASCRIPT APPLICATION LOGIC ================= -->
   <script>
-    // =========================================================================
-    // 100% WORKING DIRECT HARDWARE ANDROID NATIVE TTS ENGINE
-    // =========================================================================
     function speakText(text, lang = 'hi-IN') {
       if (AppState.isMuted) return;
       const cleanStr = (text || '').trim();
@@ -1112,18 +1141,22 @@
       document.getElementById('hearts-modal').classList.add('hidden');
     }
 
+    // =========================================================================
+    // REWARDED AD: EXACT 2 HEARTS ADDED
+    // =========================================================================
     function triggerRewardedAdForHearts() {
       const btn = document.getElementById('btn-rewarded-ad');
-      btn.innerHTML = '<span>⏳</span> Ad लोड हो रहा है...';
+      btn.innerHTML = '<span class="ad-policy-badge">AD</span> <span>⏳</span> विज्ञापन लोड हो रहा है...';
 
       AdService.showRewarded(() => {
-        AppState.hearts = AppState.maxHearts;
+        // EXACT +2 Hearts जोड़े जाएंगे (मैक्सिमम 5 तक)
+        AppState.hearts = Math.min(AppState.maxHearts, AppState.hearts + 2);
         saveStats();
         closeHeartsModal();
         AudioFX.winFanfare();
         triggerConfetti();
-        btn.innerHTML = '<span>🎬</span> 5❤ पायें (मुफ़्त वीडियो देखें)';
-        alert("🎉 बहुत अच्छे! आपके 5 ❤️ हार्ट्स रीचार्ज हो गए हैं।");
+        btn.innerHTML = '<span class="ad-policy-badge">AD</span> <span>🎬</span> 2❤ पायें (मुफ़्त वीडियो विज्ञापन)';
+        alert("🎉 बहुत अच्छे! आपको +2 ❤️ हार्ट्स मिल गए हैं।");
       });
     }
 
@@ -1298,7 +1331,6 @@
 
       barakhadiRoots: ['क', 'ख', 'ग', 'घ', 'च', 'छ', 'ज', 'ट', 'ठ', 'ड', 'त', 'थ', 'द', 'ध', 'न', 'प', 'फ', 'ब', 'भ', 'म', 'य', 'र', 'ल', 'व', 'स', 'ह'],
 
-      // COMPLETE 1 TO 100 GINTI
       ginti100: [
         { num: 1, hi: 'एक', en: 'One' }, { num: 2, hi: 'दो', en: 'Two' }, { num: 3, hi: 'तीन', en: 'Three' }, { num: 4, hi: 'चार', en: 'Four' }, { num: 5, hi: 'पाँच', en: 'Five' },
         { num: 6, hi: 'छह', en: 'Six' }, { num: 7, hi: 'सात', en: 'Seven' }, { num: 8, hi: 'आठ', en: 'Eight' }, { num: 9, hi: 'नौ', en: 'Nine' }, { num: 10, hi: 'दस', en: 'Ten' },
@@ -1322,7 +1354,6 @@
         { num: 96, hi: 'छियानवे', en: 'Ninety Six' }, { num: 97, hi: 'सत्तानवे', en: 'Ninety Seven' }, { num: 98, hi: 'अट्ठानवे', en: 'Ninety Eight' }, { num: 99, hi: 'निन्यानवे', en: 'Ninety Nine' }, { num: 100, hi: 'एक सौ', en: 'One Hundred' }
       ],
 
-      // IKAYI DAHAI LAB DATA
       ikayiDahaiList: [
         { place: 'इकाई (Ones)', value: '1', desc: '1 अंक (Single Digit)', icon: '🟢', speech: 'इकाई का मतलब एक अंक' },
         { place: 'दहाई (Tens)', value: '10', desc: '10 का समूह (Group of 10)', icon: '🟡', speech: 'दहाई का मतलब दस का एक समूह' },
@@ -1941,38 +1972,51 @@
       renderTrayAndSourcePool();
     }
 
+    // =========================================================================
+    // HINT ENGINE (DIRECT AD REWARD & AUTO-SELECTION)
+    // =========================================================================
     function applyHintLogic() {
-      if (!AppState.currentChipItem) return;
-      const expected = AppState.currentChipItem.chips;
+      if (!AppState.currentChipItem || AppState.chipAnswered) return;
+
+      const targetList = AppState.currentChipItem.chips;
       const currentIdx = AppState.assembledChips.length;
-      if (currentIdx < expected.length) {
-        const nextCorrectChip = expected[currentIdx];
+
+      if (currentIdx < targetList.length) {
+        // अगला सही चिप चुनें
+        const nextCorrectChip = targetList[currentIdx];
+
+        // ट्रे में डालें और साउंड बजाएं
         AppState.assembledChips.push(nextCorrectChip);
-        AudioFX.pop();
-        speakText(nextCorrectChip, 'hi-IN');
+        AudioFX.success();
+        speakText(nextCorrectChip, AppState.currentChipItem.lang === 'en' ? 'en-US' : 'hi-IN');
+        
+        // यूज़र इंटरफ़ेस री-रेंडर करें
         resetChipActionButton();
         renderTrayAndSourcePool();
+
+        // यदि सारे चिप्स भर गए हों तो 'जाँचें' बटन को ग्लो करें
+        if (AppState.assembledChips.length === targetList.length) {
+          const btn = document.getElementById('btn-chip-main-action');
+          if (btn) btn.classList.add('pulse-next');
+        }
+      } else {
+        alert("सभी चिप्स पहले ही चुने जा चुके हैं! '✓ जाँचें' बटन दबाएँ।");
       }
     }
 
     function giveChipHint() {
       if (!AppState.currentChipItem || AppState.chipAnswered) return;
-      const expected = AppState.currentChipItem.chips;
-      const currentIdx = AppState.assembledChips.length;
-      if (currentIdx >= expected.length) return;
-
-      const now = Date.now();
-      const lastAdTime = parseInt(localStorage.getItem('bg_hint_ad_time') || '0');
-      const tenMinutes = 10 * 60 * 1000;
-
-      if (now - lastAdTime < tenMinutes) {
-        applyHintLogic();
-      } else {
-        AdService.showRewarded(() => {
-          localStorage.setItem('bg_hint_ad_time', Date.now().toString());
-          applyHintLogic();
-        });
+      const targetList = AppState.currentChipItem.chips;
+      
+      if (AppState.assembledChips.length >= targetList.length) {
+        alert("सभी चिप्स पहले से चुने हुए हैं!");
+        return;
       }
+
+      // विज्ञापन लोड करके दिखाएं, पूरा देखने पर अगला चिप ऑटो-सेलेक्ट होगा
+      AdService.showRewarded(() => {
+        applyHintLogic();
+      });
     }
 
     function speakTargetPrompt() {
@@ -2393,7 +2437,6 @@
       }
     }
 
-    // ROBUST MICROPHONE PERMISSION & SPEECH RECOGNITION
     async function handleVoiceMicClick() {
       const micLabel = document.getElementById('mic-label');
       const pulseBanner = document.getElementById('mic-recording-pulse');
