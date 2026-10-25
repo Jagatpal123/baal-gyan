@@ -15,7 +15,6 @@
 
   <style>
     :root {
-      /* कैमरा नॉच और स्टेटस बार सुरक्षा */
       --safe-top: env(safe-area-inset-top, 24px);
       --safe-bottom: env(safe-area-inset-bottom, 16px);
     }
@@ -32,7 +31,6 @@
       touch-action: manipulation;
     }
 
-    /* कैमरा नॉच से नीचे रखने के लिए टॉप हेडर पैडिंग */
     .notch-safe-header {
       padding-top: calc(var(--safe-top) + 8px) !important;
     }
@@ -173,7 +171,7 @@
       animation: fadeInModal 0.25s ease-out forwards;
     }
 
-    /* Google Families Policy Ad Tag Badge */
+    /* Families Policy Compliant Ad Badge */
     .ad-policy-badge {
       background-color: #1e293b;
       color: #facc15;
@@ -192,7 +190,7 @@
   <div id="welcome-screen" class="fixed inset-0 z-50 bg-gradient-to-b from-sky-400 via-teal-400 to-emerald-500 flex flex-col items-center justify-between p-6 transition-all duration-300" style="padding-top: calc(var(--safe-top) + 16px);">
     <div class="w-full flex items-center justify-between text-white text-xs font-black">
       <span class="bg-white/20 backdrop-blur-md px-3 py-1 rounded-full border border-white/30">✨ भारत का अपना किड्स ऐप</span>
-      <span class="bg-white/20 backdrop-blur-md px-3 py-1 rounded-full border border-white/30">v2.0 Ultra</span>
+      <span class="bg-white/20 backdrop-blur-md px-3 py-1 rounded-full border border-white/30">v2.1 Ultra</span>
     </div>
 
     <div class="flex flex-col items-center text-center animate-fade-in my-auto w-full max-w-sm">
@@ -217,7 +215,7 @@
     </div>
   </div>
 
-  <!-- ================= TOP HEADER (NOTCH SAFE & FAMILIES COMPLIANT) ================= -->
+  <!-- ================= TOP HEADER ================= -->
   <header class="sticky top-0 z-30 bg-white border-b-4 border-amber-200 shadow-sm px-3 pb-2.5 notch-safe-header flex items-center justify-between">
     <div class="flex items-center gap-2 cursor-pointer" onclick="goToHomeScreen()">
       <img src="logo.png" alt="App Logo" class="w-10 h-10 rounded-xl object-contain border-2 border-amber-200 shadow-sm" onerror="this.src='https://cdn-icons-png.flaticon.com/512/3815/3815321.png'">
@@ -227,10 +225,10 @@
       </div>
     </div>
 
-    <!-- Stats & Families Policy Ad-Tagged Heart Button -->
+    <!-- Stats & Heart Button -->
     <div class="flex items-center gap-1.5 sm:gap-2">
-      <button onclick="openHeartsModal()" class="flex items-center gap-1 bg-rose-50 border-2 border-rose-300 rounded-full px-2 py-1 text-xs font-black text-rose-600 shadow-sm active:scale-95">
-        <span class="ad-policy-badge">AD</span>
+      <button onclick="handleHeaderHeartClick()" class="flex items-center gap-1 bg-rose-50 border-2 border-rose-300 rounded-full px-2 py-1 text-xs font-black text-rose-600 shadow-sm active:scale-95">
+        <span class="ad-policy-badge" id="header-heart-badge">AD</span>
         <span class="heart-pulse text-sm leading-none">❤</span>
         <span id="stat-hearts">5</span>/5
       </button>
@@ -249,22 +247,22 @@
     </div>
   </header>
 
-  <!-- ================= HEARTS REFILL MODAL (FAMILIES COMPLIANT - +2 HEARTS) ================= -->
+  <!-- ================= HEARTS REFILL MODAL ================= -->
   <div id="hearts-modal" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm hidden flex items-center justify-center p-4">
     <div class="bg-white border-4 border-rose-300 rounded-3xl p-5 max-w-sm w-full shadow-2xl flex flex-col items-center text-center gap-3">
       <div class="w-16 h-16 rounded-full bg-rose-100 flex items-center justify-center text-4xl shadow-inner heart-pulse">
         ❤️
       </div>
       <h3 class="text-xl font-black text-slate-800">हार्ट्स रीफिल करें!</h3>
-      <p class="text-xs font-bold text-slate-500">
+      <p class="text-xs font-bold text-slate-500" id="modal-hearts-status-msg">
         खेलने और सीखने के लिए हार्ट्स की ज़रूरत होती है। आपके पास 
-        <span id="modal-hearts-count" class="font-black text-rose-600">5</span> हार्ट्स हैं।
+        <span id="modal-hearts-count" class="font-black text-rose-600">0</span> हार्ट्स हैं।
       </p>
 
-      <!-- Google Policy Compliant Ad Button: Rewarded Ad Gives +2 Hearts -->
+      <!-- Smart Rewarded Button -->
       <button onclick="triggerRewardedAdForHearts()" id="btn-rewarded-ad" class="w-full btn-3d btn-rose py-3 px-4 rounded-2xl font-black text-sm flex items-center justify-center gap-2">
-        <span class="ad-policy-badge">AD</span>
-        <span>🎬</span> 2❤ पायें (मुफ़्त वीडियो विज्ञापन)
+        <span class="ad-policy-badge" id="modal-ad-tag">AD</span>
+        <span>🎬</span> <span id="modal-ad-btn-text">2❤ पायें (मुफ़्त वीडियो विज्ञापन)</span>
       </button>
 
       <button onclick="refillHeartsWithGems()" class="w-full btn-3d btn-blue py-3 px-4 rounded-2xl font-black text-sm flex items-center justify-center gap-2">
@@ -337,7 +335,6 @@
           <span class="text-slate-400 font-black text-xl">➔</span>
         </div>
 
-        <!-- CATEGORY: GINTI, PAHADA & IKAYI-DAHAI -->
         <div onclick="navigateCategory('mathlab')" class="card-3d p-3.5 flex items-center justify-between cursor-pointer border-orange-200 hover:border-orange-400">
           <div class="flex items-center gap-3">
             <div class="w-12 h-12 rounded-2xl bg-orange-100 text-orange-600 flex items-center justify-center text-2xl font-black">🔢</div>
@@ -412,7 +409,7 @@
       </div>
     </section>
 
-    <!-- VIEW: MATH LAB (GINITI 1-100, PAHADA 1-20, IKAYI-DAHAI) -->
+    <!-- VIEW: MATH LAB -->
     <section id="view-mathlab" class="tab-view hidden flex flex-col gap-3">
       <div class="flex items-center justify-between">
         <button onclick="goToHomeScreen()" class="btn-3d bg-white border-2 border-slate-300 text-slate-700 px-3 py-1.5 rounded-xl text-xs font-black flex items-center gap-1 shadow-sm">
@@ -421,14 +418,12 @@
         <span class="text-xs font-black text-orange-700 bg-orange-100 px-2.5 py-1 rounded-xl">गणित शाला 🧮</span>
       </div>
 
-      <!-- Mode Selector -->
       <div class="grid grid-cols-3 gap-1 bg-amber-200/60 p-1 rounded-2xl text-center">
         <button onclick="switchMathSubTab('ginti')" id="btn-math-ginti" class="py-2 text-[11px] font-black rounded-xl bg-white shadow-sm text-orange-700">1-100 गिनती</button>
         <button onclick="switchMathSubTab('pahada')" id="btn-math-pahada" class="py-2 text-[11px] font-black rounded-xl text-slate-600">1-20 पहाड़ा</button>
         <button onclick="switchMathSubTab('ikayi')" id="btn-math-ikayi" class="py-2 text-[11px] font-black rounded-xl text-slate-600">इकाई-दहाई</button>
       </div>
 
-      <!-- Banner -->
       <div class="flex items-center justify-between bg-white border-2 border-orange-200 rounded-2xl p-2.5 shadow-sm">
         <div class="flex items-center gap-2">
           <span class="text-2xl" id="math-banner-icon">🔢</span>
@@ -442,13 +437,11 @@
         </button>
       </div>
 
-      <!-- Subcontainer: Ginti -->
       <div id="math-ginti-container" class="flex flex-col gap-2.5">
         <div class="flex gap-1.5 overflow-x-auto no-scrollbar py-1" id="ginti-range-scroller"></div>
         <div id="ginti-grid" class="grid grid-cols-4 sm:grid-cols-5 gap-2.5 pb-4"></div>
       </div>
 
-      <!-- Subcontainer: Pahada -->
       <div id="math-pahada-container" class="hidden flex flex-col gap-2.5">
         <div>
           <label class="text-xs font-black text-slate-600 mb-1 block">पहाड़ा चुनें (Table 1 to 20):</label>
@@ -457,7 +450,6 @@
         <div id="pahada-grid" class="grid grid-cols-2 gap-2.5 pb-4"></div>
       </div>
 
-      <!-- Subcontainer: Ikayi Dahai -->
       <div id="math-ikayi-container" class="hidden flex flex-col gap-3 pb-4">
         <div class="bg-gradient-to-r from-amber-500 to-orange-500 text-white rounded-2xl p-3 shadow-md flex items-center justify-between">
           <div>
@@ -466,30 +458,7 @@
           </div>
           <div class="text-3xl">🏛️</div>
         </div>
-
         <div id="ikayi-cards-list" class="flex flex-col gap-2.5"></div>
-
-        <div class="bg-white border-2 border-orange-300 rounded-2xl p-3 shadow-sm">
-          <h4 class="text-xs font-black text-orange-900 mb-1">💡 उदाहरण से समझें (संख्या: 4321):</h4>
-          <div class="grid grid-cols-4 gap-1.5 text-center text-xs font-bold pt-1">
-            <div class="bg-rose-50 border border-rose-200 rounded-xl p-2">
-              <span class="text-rose-700 font-black text-sm block">4</span>
-              <span class="text-[10px] text-slate-500">हज़ार (4000)</span>
-            </div>
-            <div class="bg-amber-50 border border-amber-200 rounded-xl p-2">
-              <span class="text-amber-700 font-black text-sm block">3</span>
-              <span class="text-[10px] text-slate-500">सैकड़ा (300)</span>
-            </div>
-            <div class="bg-emerald-50 border border-emerald-200 rounded-xl p-2">
-              <span class="text-emerald-700 font-black text-sm block">2</span>
-              <span class="text-[10px] text-slate-500">दहाई (20)</span>
-            </div>
-            <div class="bg-sky-50 border border-sky-200 rounded-xl p-2">
-              <span class="text-sky-700 font-black text-sm block">1</span>
-              <span class="text-[10px] text-slate-500">इकाई (1)</span>
-            </div>
-          </div>
-        </div>
       </div>
     </section>
 
@@ -569,7 +538,7 @@
       </div>
     </section>
 
-    <!-- VIEW 3: चिप्स वाक्य व शब्द (COMPLIANT HINT BUTTON & AUTO-SELECTION) -->
+    <!-- VIEW 3: चिप्स वाक्य व शब्द (COMPLIANT HINT ENGINE) -->
     <section id="view-chips" class="tab-view hidden flex flex-col gap-3 relative pb-4">
       <div class="flex items-center justify-between">
         <button onclick="goToHomeScreen()" class="btn-3d bg-white border-2 border-slate-300 text-slate-700 px-3 py-1.5 rounded-xl text-xs font-black flex items-center gap-1 shadow-sm">
@@ -628,12 +597,13 @@
           <div id="chip-source-pool" class="flex flex-wrap gap-2 justify-center"></div>
         </div>
 
-        <!-- Action Controls with AD Tagged Hint -->
+        <!-- Action Controls -->
         <div class="flex gap-2 pt-2">
           <button onclick="clearCurrentTray()" class="btn-3d bg-rose-100 border-2 border-rose-300 text-rose-700 px-3 py-2.5 rounded-2xl text-xs font-black flex-1">
             🗑 रीसेट
           </button>
           
+          <!-- HINT BUTTON (AD Tagged & 10 Min Pass Trigger) -->
           <button onclick="giveChipHint()" class="btn-3d btn-yellow px-2 py-2.5 rounded-2xl text-xs font-black flex-1 flex items-center justify-center gap-1">
             <span class="ad-policy-badge">AD</span>
             <span>💡 संकेत</span>
@@ -796,7 +766,7 @@
       </div>
 
       <div class="bg-amber-100/70 border-2 border-amber-300 rounded-2xl p-3">
-        <h4 class="text-xs font-black text-amber-900 mb-2">⚡ बच्चों के रोज़मर्रा के सवाल (टैप करें और सीखें):</h4>
+        <h4 class="text-xs font-black text-amber-900 mb-2">⚡ बच्चों के रोज़मर्रा के सवाल:</h4>
         <div id="quick-translate-chips" class="flex flex-wrap gap-1.5"></div>
       </div>
     </section>
@@ -844,7 +814,7 @@
 
   </main>
 
-  <!-- ================= FIXED BOTTOM AD CONTAINER (FAMILIES POLICY COMPLIANT) ================= -->
+  <!-- ================= FIXED BOTTOM AD CONTAINER ================= -->
   <div id="families-ad-wrapper" class="fixed bottom-14 left-0 right-0 z-30 bg-amber-100/90 border-t border-amber-300 text-center py-1 max-w-lg mx-auto">
     <span class="text-[10px] font-black text-slate-500 uppercase tracking-widest block">Advertisement</span>
     <div id="banner-ad-box" style="min-height: 50px;"></div>
@@ -875,12 +845,11 @@
     </div>
   </nav>
 
-  <!-- ================= ADMOB NATIVE INTEGRATION ENGINE (FAMILIES COMPLIANT) ================= -->
+  <!-- ================= ADMOB NATIVE INTEGRATION ENGINE ================= -->
   <script>
     const AdConfig = {
       bannerId: 'ca-app-pub-6302105448775587/9146645040',
       rewardedId: 'ca-app-pub-6302105448775587/2277984366',
-      isRewardedLoaded: false,
       bannerVisible: false
     };
 
@@ -895,7 +864,7 @@
               tagForChildDirectedTreatment: true,
               maxAdContentRating: 'G'
             });
-            this.preloadRewarded();
+            await this.preloadRewarded();
           } catch (e) {
             console.warn('AdMob Init Error:', e);
           }
@@ -933,7 +902,6 @@
               tagForChildDirectedTreatment: true,
               maxAdContentRating: 'G'
             });
-            AdConfig.isRewardedLoaded = true;
           } catch (e) {
             console.warn('Rewarded Preload Error:', e);
           }
@@ -941,41 +909,48 @@
       },
 
       async showRewarded(onRewardCallback) {
-        let callbackExecuted = false;
-        const executeCallback = () => {
-          if (!callbackExecuted && typeof onRewardCallback === 'function') {
-            callbackExecuted = true;
-            onRewardCallback();
-          }
-        };
+        let isRewarded = false;
 
         if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.AdMob) {
+          const { AdMob, RewardAdEvents } = window.Capacitor.Plugins;
           try {
-            const { AdMob, RewardAdEvents } = window.Capacitor.Plugins;
-            let rewardedGranted = false;
+            await this.preloadRewarded();
 
-            const onRewarded = await AdMob.addListener(RewardAdEvents ? RewardAdEvents.Rewarded : 'onRewarded', () => {
-              rewardedGranted = true;
+            const rewardedListener = await AdMob.addListener(RewardAdEvents ? RewardAdEvents.Rewarded : 'onRewarded', () => {
+              isRewarded = true;
             });
 
-            const onDismissed = await AdMob.addListener(RewardAdEvents ? RewardAdEvents.Dismissed : 'onDismissed', () => {
-              onRewarded.remove();
-              onDismissed.remove();
-              AdConfig.isRewardedLoaded = false;
+            const dismissedListener = await AdMob.addListener(RewardAdEvents ? RewardAdEvents.Dismissed : 'onDismissed', async () => {
+              rewardedListener.remove();
+              dismissedListener.remove();
               AdService.preloadRewarded();
-              if (rewardedGranted) {
-                executeCallback();
+
+              if (isRewarded && typeof onRewardCallback === 'function') {
+                onRewardCallback();
+              }
+            });
+
+            const failedListener = await AdMob.addListener(RewardAdEvents ? RewardAdEvents.FailedToShow : 'onFailedToShow', async () => {
+              rewardedListener.remove();
+              dismissedListener.remove();
+              failedListener.remove();
+              AdService.preloadRewarded();
+              if (typeof onRewardCallback === 'function') {
+                onRewardCallback();
               }
             });
 
             await AdMob.showRewardVideoAd();
-            return;
           } catch (e) {
-            console.warn('Rewarded show error:', e);
-            executeCallback();
+            console.warn('Ad Show Error / Fallback:', e);
+            if (typeof onRewardCallback === 'function') {
+              onRewardCallback();
+            }
           }
         } else {
-          executeCallback();
+          if (typeof onRewardCallback === 'function') {
+            onRewardCallback();
+          }
         }
       }
     };
@@ -1049,13 +1024,16 @@
     }
 
     const AppState = {
-      hearts: parseInt(localStorage.getItem('bg_hearts') || '5'),
+      hearts: parseInt(localStorage.getItem('bg_hearts') !== null ? localStorage.getItem('bg_hearts') : '5'),
       maxHearts: 5,
       stars: parseInt(localStorage.getItem('bg_stars') || '45'),
       streak: parseInt(localStorage.getItem('bg_streak') || '3'),
       gems: parseInt(localStorage.getItem('bg_gems') || '120'),
       isMuted: localStorage.getItem('bg_muted') === 'true',
       
+      // 10 MINUTES FREE PASS TIMESTAMP
+      freeHeartPassUntil: parseInt(localStorage.getItem('bg_free_heart_until') || '0'),
+
       activeCategory: 'home',
       alphaMode: 'hindi-svar',
       chipMode: 'sentence',
@@ -1088,6 +1066,10 @@
       activeRecognition: null
     };
 
+    function isFreeHeartPassActive() {
+      return Date.now() < AppState.freeHeartPassUntil;
+    }
+
     function saveStats() {
       localStorage.setItem('bg_hearts', AppState.hearts);
       localStorage.setItem('bg_stars', AppState.stars);
@@ -1096,6 +1078,7 @@
       localStorage.setItem('bg_muted', AppState.isMuted);
       localStorage.setItem('bg_sent_done', AppState.completedSentencesCount);
       localStorage.setItem('bg_words_done', AppState.completedWordsCount);
+      localStorage.setItem('bg_free_heart_until', AppState.freeHeartPassUntil);
       updateHeaderStatsDisplay();
     }
 
@@ -1105,6 +1088,19 @@
       document.getElementById('stat-streak').innerText = AppState.streak;
       document.getElementById('stat-gems').innerText = AppState.gems;
       document.getElementById('sound-btn').innerText = AppState.isMuted ? '🔇' : '🔊';
+
+      const heartBadge = document.getElementById('header-heart-badge');
+      if (heartBadge) {
+        if (isFreeHeartPassActive()) {
+          heartBadge.innerText = 'FREE';
+          heartBadge.style.backgroundColor = '#10b981';
+          heartBadge.style.color = '#ffffff';
+        } else {
+          heartBadge.innerText = 'AD';
+          heartBadge.style.backgroundColor = '#1e293b';
+          heartBadge.style.color = '#facc15';
+        }
+      }
 
       const achStreak = document.getElementById('achieve-streak');
       if (achStreak) achStreak.innerText = `${AppState.streak} दिन`;
@@ -1133,31 +1129,79 @@
       return true;
     }
 
+    // =========================================================================
+    // SMART HEART BUTTON CLICK (0 HEARTS RULE & 10 MINUTE FREE PASS)
+    // =========================================================================
+    function handleHeaderHeartClick() {
+      // Rule: Jab tak 0 na ho, ad nahi aana chahiye
+      if (AppState.hearts > 0) {
+        AudioFX.pop();
+        alert(`आपके पास अभी ${AppState.hearts} ❤️ हार्ट्स बचे हैं! पहले अपने हार्ट्स खत्म कर लें।`);
+        return;
+      }
+      openHeartsModal();
+    }
+
     function openHeartsModal() {
-      document.getElementById('hearts-modal').classList.remove('hidden');
+      const modal = document.getElementById('hearts-modal');
+      const adTag = document.getElementById('modal-ad-tag');
+      const btnText = document.getElementById('modal-ad-btn-text');
+
+      if (isFreeHeartPassActive()) {
+        const remainingMin = Math.ceil((AppState.freeHeartPassUntil - Date.now()) / (60 * 1000));
+        adTag.innerText = 'FREE';
+        adTag.style.backgroundColor = '#10b981';
+        adTag.style.color = '#ffffff';
+        btnText.innerText = `मुफ़्त +2❤ पायें (${remainingMin} मिनट बचे हैं)`;
+      } else {
+        adTag.innerText = 'AD';
+        adTag.style.backgroundColor = '#1e293b';
+        adTag.style.color = '#facc15';
+        btnText.innerText = `2❤ पायें (मुफ़्त वीडियो विज्ञापन)`;
+      }
+
+      modal.classList.remove('hidden');
     }
 
     function closeHeartsModal() {
       document.getElementById('hearts-modal').classList.add('hidden');
     }
 
-    // =========================================================================
-    // REWARDED AD: EXACT 2 HEARTS ADDED
-    // =========================================================================
     function triggerRewardedAdForHearts() {
+      // Agar 10 minutes ka pass chal raha ho, toh bina ad ke seedhe 2 hearts dein
+      if (isFreeHeartPassActive()) {
+        grantTwoHearts("🎉 10 मिनट फ्री पास एक्टिव है! आपको बिना Ad के +2 ❤️ मिल गए।");
+        return;
+      }
+
+      // Agar bache hue hearts hain toh ad na chalayein
+      if (AppState.hearts > 0) {
+        alert(`आपके पास अभी ${AppState.hearts} ❤️ हार्ट्स मौजूद हैं! पहले अपने हार्ट्स खत्म कर लें।`);
+        closeHeartsModal();
+        return;
+      }
+
       const btn = document.getElementById('btn-rewarded-ad');
       btn.innerHTML = '<span class="ad-policy-badge">AD</span> <span>⏳</span> विज्ञापन लोड हो रहा है...';
 
       AdService.showRewarded(() => {
-        // EXACT +2 Hearts जोड़े जाएंगे (मैक्सिमम 5 तक)
-        AppState.hearts = Math.min(AppState.maxHearts, AppState.hearts + 2);
-        saveStats();
-        closeHeartsModal();
-        AudioFX.winFanfare();
-        triggerConfetti();
+        grantTwoHearts("🎉 बहुत अच्छे! आपके खाते में +2 ❤️ हार्ट्स जोड़ दिए गए हैं।");
         btn.innerHTML = '<span class="ad-policy-badge">AD</span> <span>🎬</span> 2❤ पायें (मुफ़्त वीडियो विज्ञापन)';
-        alert("🎉 बहुत अच्छे! आपको +2 ❤️ हार्ट्स मिल गए हैं।");
       });
+    }
+
+    function grantTwoHearts(msg) {
+      let current = parseInt(AppState.hearts) || 0;
+      current = Math.min(AppState.maxHearts, current + 2);
+      AppState.hearts = current;
+
+      saveStats();
+      updateHeaderStatsDisplay();
+      closeHeartsModal();
+
+      AudioFX.winFanfare();
+      triggerConfetti();
+      alert(msg);
     }
 
     function refillHeartsWithGems() {
@@ -1167,7 +1211,7 @@
         saveStats();
         closeHeartsModal();
         AudioFX.success();
-        alert("💎 20 जेम्स देकर आपके 5 हार्ट्स रीचार्ज हो गए!");
+        alert("💎 20 जेम्स देकर आपके हार्ट्स रीचार्ज हो गए!");
       } else {
         AudioFX.error();
         alert("पर्याप्त जेम्स नहीं हैं! मुफ़्त वीडियो देखकर रीचार्ज करें।");
@@ -1489,9 +1533,7 @@
       if (catName === 'achieve') updateHeaderStatsDisplay();
     }
 
-    // =========================================================================
-    // MATH LAB: GINTI (1-100), PAHADA (1-20), IKAYI-DAHAI
-    // =========================================================================
+    // MATH LAB
     const gintiRanges = [
       { label: '1 से 20', start: 1, end: 20 },
       { label: '21 से 40', start: 21, end: 40 },
@@ -1973,7 +2015,7 @@
     }
 
     // =========================================================================
-    // HINT ENGINE (DIRECT AD REWARD & AUTO-SELECTION)
+    // HINT & 10-MINUTE PASS TRIGGER ENGINE
     // =========================================================================
     function applyHintLogic() {
       if (!AppState.currentChipItem || AppState.chipAnswered) return;
@@ -1982,40 +2024,46 @@
       const currentIdx = AppState.assembledChips.length;
 
       if (currentIdx < targetList.length) {
-        // अगला सही चिप चुनें
         const nextCorrectChip = targetList[currentIdx];
 
-        // ट्रे में डालें और साउंड बजाएं
+        // Direct push to tray
         AppState.assembledChips.push(nextCorrectChip);
         AudioFX.success();
-        speakText(nextCorrectChip, AppState.currentChipItem.lang === 'en' ? 'en-US' : 'hi-IN');
-        
-        // यूज़र इंटरफ़ेस री-रेंडर करें
+        const speechLang = AppState.currentChipItem.lang === 'en' ? 'en-US' : 'hi-IN';
+        speakText(nextCorrectChip, speechLang);
+
         resetChipActionButton();
         renderTrayAndSourcePool();
 
-        // यदि सारे चिप्स भर गए हों तो 'जाँचें' बटन को ग्लो करें
         if (AppState.assembledChips.length === targetList.length) {
           const btn = document.getElementById('btn-chip-main-action');
           if (btn) btn.classList.add('pulse-next');
         }
       } else {
-        alert("सभी चिप्स पहले ही चुने जा चुके हैं! '✓ जाँचें' बटन दबाएँ।");
+        alert("सभी चिप्स पहले ही चुने जा चुके हैं! नीचे '✓ जाँचें' बटन दबाएँ।");
       }
     }
 
     function giveChipHint() {
       if (!AppState.currentChipItem || AppState.chipAnswered) return;
       const targetList = AppState.currentChipItem.chips;
-      
+
       if (AppState.assembledChips.length >= targetList.length) {
         alert("सभी चिप्स पहले से चुने हुए हैं!");
         return;
       }
 
-      // विज्ञापन लोड करके दिखाएं, पूरा देखने पर अगला चिप ऑटो-सेलेक्ट होगा
+      // AdMob Rewarded Video for Hint
       AdService.showRewarded(() => {
+        // 1. Hint dekar agla sahi chip auto-select karein
         applyHintLogic();
+
+        // 2. Agle 10 minutes ke liye Heart button ko free kar dein
+        AppState.freeHeartPassUntil = Date.now() + (10 * 60 * 1000);
+        saveStats();
+        updateHeaderStatsDisplay();
+
+        alert("✨ संकेत मिल गया! साथ ही अगले 10 मिनट के लिए आपका Heart Button बिल्कुल FREE कर दिया गया है!");
       });
     }
 
