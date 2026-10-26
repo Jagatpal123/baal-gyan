@@ -215,7 +215,7 @@
     </div>
   </div>
 
-  <!-- ================= TOP HEADER ================= -->
+  <!-- ================= TOP HEADER (NOTCH SAFE & FAMILIES COMPLIANT) ================= -->
   <header class="sticky top-0 z-30 bg-white border-b-4 border-amber-200 shadow-sm px-3 pb-2.5 notch-safe-header flex items-center justify-between">
     <div class="flex items-center gap-2 cursor-pointer" onclick="goToHomeScreen()">
       <img src="logo.png" alt="App Logo" class="w-10 h-10 rounded-xl object-contain border-2 border-amber-200 shadow-sm" onerror="this.src='https://cdn-icons-png.flaticon.com/512/3815/3815321.png'">
@@ -844,7 +844,7 @@
     </div>
   </nav>
 
-  <!-- ================= ADMOB NATIVE INTEGRATION ENGINE ================= -->
+  <!-- ================= ADMOB NATIVE INTEGRATION ENGINE (FAMILIES COMPLIANT & WEBVIEW RE-ACTIVATION SAFE) ================= -->
   <script>
     const AdConfig = {
       bannerId: 'ca-app-pub-6302105448775587/9146645040',
@@ -909,6 +909,17 @@
 
       async showRewarded(onRewardCallback) {
         let isRewarded = false;
+        let callbackFired = false;
+
+        const triggerReward = () => {
+          if (!callbackFired && typeof onRewardCallback === 'function') {
+            callbackFired = true;
+            // Native Ad dismiss होने के बाद WebView UI को फोकस में आने के लिए 350ms सुरक्षित समय
+            setTimeout(() => {
+              onRewardCallback();
+            }, 350);
+          }
+        };
 
         if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.AdMob) {
           const { AdMob, RewardAdEvents } = window.Capacitor.Plugins;
@@ -924,8 +935,8 @@
               dismissedListener.remove();
               AdService.preloadRewarded();
 
-              if (isRewarded && typeof onRewardCallback === 'function') {
-                onRewardCallback();
+              if (isRewarded) {
+                triggerReward();
               }
             });
 
@@ -934,22 +945,18 @@
               dismissedListener.remove();
               failedListener.remove();
               AdService.preloadRewarded();
-              if (typeof onRewardCallback === 'function') {
-                onRewardCallback();
-              }
+              // बैकअप फ़ॉलबैक
+              triggerReward();
             });
 
             await AdMob.showRewardVideoAd();
           } catch (e) {
             console.warn('Ad Show Error / Fallback:', e);
-            if (typeof onRewardCallback === 'function') {
-              onRewardCallback();
-            }
+            triggerReward();
           }
         } else {
-          if (typeof onRewardCallback === 'function') {
-            onRewardCallback();
-          }
+          // ब्राउज़र / लोकल टेस्टिंग मोड
+          triggerReward();
         }
       }
     };
@@ -1374,7 +1381,7 @@
         { place: 'सैकड़ा (Hundreds)', value: '100', desc: '100 का समूह (Group of 100)', icon: '🟠', speech: 'सैकड़ा का मतलब एक सौ' },
         { place: 'हज़ार (Thousands)', value: '1,000', desc: '1000 का समूह', icon: '🔴', speech: 'हज़ार का मतलब एक हज़ार' },
         { place: 'दस हज़ार (Ten Thousands)', value: '10,000', desc: '10 हज़ार का समूह', icon: '🟣', speech: 'दस हज़ार' },
-        { place: 'लाख (Lakh / Hundred Thousands)', value: '1,00,00,000', desc: '1 लाख', icon: '💎', speech: 'एक लाख' },
+        { place: 'लाख (Lakh / Hundred Thousands)', value: '1,00,000', desc: '1 लाख', icon: '💎', speech: 'एक लाख' },
         { place: 'दस लाख (Ten Lakhs / Million)', value: '10,00,000', desc: '10 लाख', icon: '👑', speech: 'दस लाख' },
         { place: 'करोड़ (Crore / Ten Millions)', value: '1,00,00,000', desc: '1 करोड़', icon: '🏆', speech: 'एक करोड़' }
       ],
@@ -1985,35 +1992,48 @@
     }
 
     // =========================================================================
-    // HINT: 5-MIN FREE PASS & DIRECT AUTO-SELECTION
+    // HINT: 100% WORKING AUTO-SELECT & 5-MIN FREE PASS ENGINE
     // =========================================================================
     function applyHintLogic() {
       if (!AppState.currentChipItem || AppState.chipAnswered) return;
 
       const targetList = AppState.currentChipItem.chips;
-      const currentIdx = AppState.assembledChips.length;
 
-      if (currentIdx < targetList.length) {
-        const nextCorrectChip = targetList[currentIdx];
+      // 1. अगर यूज़र ने पहले से कोई गलत चिप्स चुने हैं, तो सही क्रम तक उन्हें रीसेट करें
+      let currentLen = AppState.assembledChips.length;
+      for (let i = 0; i < currentLen; i++) {
+        if (cleanToken(AppState.assembledChips[i]) !== cleanToken(targetList[i])) {
+          AppState.assembledChips = AppState.assembledChips.slice(0, i);
+          break;
+        }
+      }
 
-        // Seedhe Tray mein push karein
+      currentLen = AppState.assembledChips.length;
+
+      // 2. अगला सही अक्षर/शब्द चुनें
+      if (currentLen < targetList.length) {
+        const nextCorrectChip = targetList[currentLen];
+
+        // ट्रे में जोड़ें
         AppState.assembledChips.push(nextCorrectChip);
 
-        // Sound aur speech
-        AudioFX.success();
-        const speechLang = AppState.currentChipItem.lang === 'en' ? 'en-US' : 'hi-IN';
-        speakText(nextCorrectChip, speechLang);
-
-        // Refresh UI
+        // UI तुरंत री-रेंडर करें
         resetChipActionButton();
         renderTrayAndSourcePool();
+
+        // 3. साउंड और स्पीच चलाएं
+        AudioFX.success();
+        const speechLang = AppState.currentChipItem.lang === 'en' ? 'en-US' : 'hi-IN';
+        setTimeout(() => {
+          speakText(nextCorrectChip, speechLang);
+        }, 150);
 
         if (AppState.assembledChips.length === targetList.length) {
           const btn = document.getElementById('btn-chip-main-action');
           if (btn) btn.classList.add('pulse-next');
         }
       } else {
-        alert("सभी चिप्स पहले ही चुने जा चुके हैं! नीचे '✓ जाँचें' बटन दबाएँ।");
+        alert("सभी चिप्स पहले से सही क्रम में चुने जा चुके हैं! नीचे '✓ जाँचें' बटन दबाएँ।");
       }
     }
 
@@ -2026,20 +2046,19 @@
         return;
       }
 
-      // Agar 5 minutes ka pass active hai, toh bina Ad ke turant hint auto-select hoga
+      // 5 मिनट का फ़्री पास होने पर बिना विज्ञापन के सीधा चुनें
       if (isFreeHintActive()) {
         applyHintLogic();
         return;
       }
 
-      // AdMob Rewarded Video for Hint
+      // विज्ञापन दिखाएँ और पूरा होने पर सीधे ऑटो-सलेक्ट चलाएँ
       AdService.showRewarded(() => {
-        // 5 Minutes ka pass set karein
         AppState.freeHintPassUntil = Date.now() + (5 * 60 * 1000);
         saveStats();
         updateHeaderStatsDisplay();
 
-        // Agla sahi chip automatic select karein
+        // चिप को ट्रे में जोड़ें
         applyHintLogic();
 
         alert("🎉 संकेत मिल गया! अगले 5 मिनट के लिए संकेत (Hint) बिल्कुल FREE रहेगा!");
