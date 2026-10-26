@@ -844,7 +844,7 @@
     </div>
   </nav>
 
-  <!-- ================= ADMOB NATIVE INTEGRATION ENGINE (FAMILIES COMPLIANT & WEBVIEW RE-ACTIVATION SAFE) ================= -->
+  <!-- ================= ADMOB NATIVE INTEGRATION ENGINE ================= -->
   <script>
     const AdConfig = {
       bannerId: 'ca-app-pub-6302105448775587/9146645040',
@@ -914,10 +914,10 @@
         const triggerReward = () => {
           if (!callbackFired && typeof onRewardCallback === 'function') {
             callbackFired = true;
-            // Native Ad dismiss होने के बाद WebView UI को फोकस में आने के लिए 350ms सुरक्षित समय
+            // Native Ad dismiss hone ke baad WebView UI ko focus lene ke liye 300ms ka buffer
             setTimeout(() => {
               onRewardCallback();
-            }, 350);
+            }, 300);
           }
         };
 
@@ -945,7 +945,6 @@
               dismissedListener.remove();
               failedListener.remove();
               AdService.preloadRewarded();
-              // बैकअप फ़ॉलबैक
               triggerReward();
             });
 
@@ -955,7 +954,6 @@
             triggerReward();
           }
         } else {
-          // ब्राउज़र / लोकल टेस्टिंग मोड
           triggerReward();
         }
       }
@@ -1381,7 +1379,7 @@
         { place: 'सैकड़ा (Hundreds)', value: '100', desc: '100 का समूह (Group of 100)', icon: '🟠', speech: 'सैकड़ा का मतलब एक सौ' },
         { place: 'हज़ार (Thousands)', value: '1,000', desc: '1000 का समूह', icon: '🔴', speech: 'हज़ार का मतलब एक हज़ार' },
         { place: 'दस हज़ार (Ten Thousands)', value: '10,000', desc: '10 हज़ार का समूह', icon: '🟣', speech: 'दस हज़ार' },
-        { place: 'लाख (Lakh / Hundred Thousands)', value: '1,00,000', desc: '1 लाख', icon: '💎', speech: 'एक लाख' },
+        { place: 'लाख (Lakh / Hundred Thousands)', value: '1,00,00,000', desc: '1 लाख', icon: '💎', speech: 'एक लाख' },
         { place: 'दस लाख (Ten Lakhs / Million)', value: '10,00,000', desc: '10 लाख', icon: '👑', speech: 'दस लाख' },
         { place: 'करोड़ (Crore / Ten Millions)', value: '1,00,00,000', desc: '1 करोड़', icon: '🏆', speech: 'एक करोड़' }
       ],
@@ -1992,75 +1990,52 @@
     }
 
     // =========================================================================
-    // HINT: 100% WORKING AUTO-SELECT & 5-MIN FREE PASS ENGINE
+    // HINT LOGIC (ORIGINAL TESTED COPY + 5-MIN FREE PASS)
     // =========================================================================
     function applyHintLogic() {
       if (!AppState.currentChipItem || AppState.chipAnswered) return;
+      const expected = AppState.currentChipItem.chips;
+      const currentIdx = AppState.assembledChips.length;
 
-      const targetList = AppState.currentChipItem.chips;
-
-      // 1. अगर यूज़र ने पहले से कोई गलत चिप्स चुने हैं, तो सही क्रम तक उन्हें रीसेट करें
-      let currentLen = AppState.assembledChips.length;
-      for (let i = 0; i < currentLen; i++) {
-        if (cleanToken(AppState.assembledChips[i]) !== cleanToken(targetList[i])) {
-          AppState.assembledChips = AppState.assembledChips.slice(0, i);
-          break;
-        }
-      }
-
-      currentLen = AppState.assembledChips.length;
-
-      // 2. अगला सही अक्षर/शब्द चुनें
-      if (currentLen < targetList.length) {
-        const nextCorrectChip = targetList[currentLen];
-
-        // ट्रे में जोड़ें
+      if (currentIdx < expected.length) {
+        const nextCorrectChip = expected[currentIdx];
         AppState.assembledChips.push(nextCorrectChip);
-
-        // UI तुरंत री-रेंडर करें
+        AudioFX.pop();
+        speakText(nextCorrectChip, AppState.currentChipItem.lang === 'en' ? 'en-US' : 'hi-IN');
         resetChipActionButton();
         renderTrayAndSourcePool();
 
-        // 3. साउंड और स्पीच चलाएं
-        AudioFX.success();
-        const speechLang = AppState.currentChipItem.lang === 'en' ? 'en-US' : 'hi-IN';
-        setTimeout(() => {
-          speakText(nextCorrectChip, speechLang);
-        }, 150);
-
-        if (AppState.assembledChips.length === targetList.length) {
+        if (AppState.assembledChips.length === expected.length) {
           const btn = document.getElementById('btn-chip-main-action');
           if (btn) btn.classList.add('pulse-next');
         }
       } else {
-        alert("सभी चिप्स पहले से सही क्रम में चुने जा चुके हैं! नीचे '✓ जाँचें' बटन दबाएँ।");
+        alert("सभी चिप्स पहले ही चुने जा चुके हैं! '✓ जाँचें' बटन दबाएँ।");
       }
     }
 
     function giveChipHint() {
       if (!AppState.currentChipItem || AppState.chipAnswered) return;
-      const targetList = AppState.currentChipItem.chips;
-
-      if (AppState.assembledChips.length >= targetList.length) {
+      const expected = AppState.currentChipItem.chips;
+      const currentIdx = AppState.assembledChips.length;
+      if (currentIdx >= expected.length) {
         alert("सभी चिप्स पहले से चुने हुए हैं!");
         return;
       }
 
-      // 5 मिनट का फ़्री पास होने पर बिना विज्ञापन के सीधा चुनें
+      // 5 Minutes Free Pass check
       if (isFreeHintActive()) {
         applyHintLogic();
         return;
       }
 
-      // विज्ञापन दिखाएँ और पूरा होने पर सीधे ऑटो-सलेक्ट चलाएँ
+      // AdMob Rewarded Video
       AdService.showRewarded(() => {
         AppState.freeHintPassUntil = Date.now() + (5 * 60 * 1000);
         saveStats();
         updateHeaderStatsDisplay();
 
-        // चिप को ट्रे में जोड़ें
         applyHintLogic();
-
         alert("🎉 संकेत मिल गया! अगले 5 मिनट के लिए संकेत (Hint) बिल्कुल FREE रहेगा!");
       });
     }
