@@ -228,7 +228,7 @@
     <!-- Stats & Heart Button -->
     <div class="flex items-center gap-1.5 sm:gap-2">
       <button onclick="handleHeaderHeartClick()" class="flex items-center gap-1 bg-rose-50 border-2 border-rose-300 rounded-full px-2 py-1 text-xs font-black text-rose-600 shadow-sm active:scale-95">
-        <span class="ad-policy-badge" id="header-heart-badge">AD</span>
+        <span class="ad-policy-badge">AD</span>
         <span class="heart-pulse text-sm leading-none">❤</span>
         <span id="stat-hearts">5</span>/5
       </button>
@@ -254,15 +254,14 @@
         ❤️
       </div>
       <h3 class="text-xl font-black text-slate-800">हार्ट्स रीफिल करें!</h3>
-      <p class="text-xs font-bold text-slate-500" id="modal-hearts-status-msg">
+      <p class="text-xs font-bold text-slate-500">
         खेलने और सीखने के लिए हार्ट्स की ज़रूरत होती है। आपके पास 
         <span id="modal-hearts-count" class="font-black text-rose-600">0</span> हार्ट्स हैं।
       </p>
 
-      <!-- Smart Rewarded Button -->
       <button onclick="triggerRewardedAdForHearts()" id="btn-rewarded-ad" class="w-full btn-3d btn-rose py-3 px-4 rounded-2xl font-black text-sm flex items-center justify-center gap-2">
-        <span class="ad-policy-badge" id="modal-ad-tag">AD</span>
-        <span>🎬</span> <span id="modal-ad-btn-text">2❤ पायें (मुफ़्त वीडियो विज्ञापन)</span>
+        <span class="ad-policy-badge">AD</span>
+        <span>🎬</span> 2❤ पायें (मुफ़्त वीडियो विज्ञापन)
       </button>
 
       <button onclick="refillHeartsWithGems()" class="w-full btn-3d btn-blue py-3 px-4 rounded-2xl font-black text-sm flex items-center justify-center gap-2">
@@ -538,7 +537,7 @@
       </div>
     </section>
 
-    <!-- VIEW 3: चिप्स वाक्य व शब्द (COMPLIANT HINT ENGINE) -->
+    <!-- VIEW 3: चिप्स वाक्य व शब्द (AUTO-SELECT HINT ENGINE) -->
     <section id="view-chips" class="tab-view hidden flex flex-col gap-3 relative pb-4">
       <div class="flex items-center justify-between">
         <button onclick="goToHomeScreen()" class="btn-3d bg-white border-2 border-slate-300 text-slate-700 px-3 py-1.5 rounded-xl text-xs font-black flex items-center gap-1 shadow-sm">
@@ -603,9 +602,9 @@
             🗑 रीसेट
           </button>
           
-          <!-- HINT BUTTON (AD Tagged & 10 Min Pass Trigger) -->
+          <!-- HINT BUTTON (5-MIN FREE PASS & AUTO SELECT) -->
           <button onclick="giveChipHint()" class="btn-3d btn-yellow px-2 py-2.5 rounded-2xl text-xs font-black flex-1 flex items-center justify-center gap-1">
-            <span class="ad-policy-badge">AD</span>
+            <span class="ad-policy-badge" id="hint-ad-badge">AD</span>
             <span>💡 संकेत</span>
           </button>
           
@@ -1031,8 +1030,8 @@
       gems: parseInt(localStorage.getItem('bg_gems') || '120'),
       isMuted: localStorage.getItem('bg_muted') === 'true',
       
-      // 10 MINUTES FREE PASS TIMESTAMP
-      freeHeartPassUntil: parseInt(localStorage.getItem('bg_free_heart_until') || '0'),
+      // 5 MINUTES FREE HINT PASS TIMESTAMP
+      freeHintPassUntil: parseInt(localStorage.getItem('bg_free_hint_until') || '0'),
 
       activeCategory: 'home',
       alphaMode: 'hindi-svar',
@@ -1066,8 +1065,8 @@
       activeRecognition: null
     };
 
-    function isFreeHeartPassActive() {
-      return Date.now() < AppState.freeHeartPassUntil;
+    function isFreeHintActive() {
+      return Date.now() < (AppState.freeHintPassUntil || 0);
     }
 
     function saveStats() {
@@ -1078,7 +1077,7 @@
       localStorage.setItem('bg_muted', AppState.isMuted);
       localStorage.setItem('bg_sent_done', AppState.completedSentencesCount);
       localStorage.setItem('bg_words_done', AppState.completedWordsCount);
-      localStorage.setItem('bg_free_heart_until', AppState.freeHeartPassUntil);
+      localStorage.setItem('bg_free_hint_until', AppState.freeHintPassUntil || 0);
       updateHeaderStatsDisplay();
     }
 
@@ -1089,16 +1088,16 @@
       document.getElementById('stat-gems').innerText = AppState.gems;
       document.getElementById('sound-btn').innerText = AppState.isMuted ? '🔇' : '🔊';
 
-      const heartBadge = document.getElementById('header-heart-badge');
-      if (heartBadge) {
-        if (isFreeHeartPassActive()) {
-          heartBadge.innerText = 'FREE';
-          heartBadge.style.backgroundColor = '#10b981';
-          heartBadge.style.color = '#ffffff';
+      const hintBadge = document.getElementById('hint-ad-badge');
+      if (hintBadge) {
+        if (isFreeHintActive()) {
+          hintBadge.innerText = 'FREE';
+          hintBadge.style.backgroundColor = '#10b981';
+          hintBadge.style.color = '#ffffff';
         } else {
-          heartBadge.innerText = 'AD';
-          heartBadge.style.backgroundColor = '#1e293b';
-          heartBadge.style.color = '#facc15';
+          hintBadge.innerText = 'AD';
+          hintBadge.style.backgroundColor = '#1e293b';
+          hintBadge.style.color = '#facc15';
         }
       }
 
@@ -1130,10 +1129,9 @@
     }
 
     // =========================================================================
-    // SMART HEART BUTTON CLICK (0 HEARTS RULE & 10 MINUTE FREE PASS)
+    // SMART HEART BUTTON (0 HEARTS RULE)
     // =========================================================================
     function handleHeaderHeartClick() {
-      // Rule: Jab tak 0 na ho, ad nahi aana chahiye
       if (AppState.hearts > 0) {
         AudioFX.pop();
         alert(`आपके पास अभी ${AppState.hearts} ❤️ हार्ट्स बचे हैं! पहले अपने हार्ट्स खत्म कर लें।`);
@@ -1143,24 +1141,7 @@
     }
 
     function openHeartsModal() {
-      const modal = document.getElementById('hearts-modal');
-      const adTag = document.getElementById('modal-ad-tag');
-      const btnText = document.getElementById('modal-ad-btn-text');
-
-      if (isFreeHeartPassActive()) {
-        const remainingMin = Math.ceil((AppState.freeHeartPassUntil - Date.now()) / (60 * 1000));
-        adTag.innerText = 'FREE';
-        adTag.style.backgroundColor = '#10b981';
-        adTag.style.color = '#ffffff';
-        btnText.innerText = `मुफ़्त +2❤ पायें (${remainingMin} मिनट बचे हैं)`;
-      } else {
-        adTag.innerText = 'AD';
-        adTag.style.backgroundColor = '#1e293b';
-        adTag.style.color = '#facc15';
-        btnText.innerText = `2❤ पायें (मुफ़्त वीडियो विज्ञापन)`;
-      }
-
-      modal.classList.remove('hidden');
+      document.getElementById('hearts-modal').classList.remove('hidden');
     }
 
     function closeHeartsModal() {
@@ -1168,13 +1149,6 @@
     }
 
     function triggerRewardedAdForHearts() {
-      // Agar 10 minutes ka pass chal raha ho, toh bina ad ke seedhe 2 hearts dein
-      if (isFreeHeartPassActive()) {
-        grantTwoHearts("🎉 10 मिनट फ्री पास एक्टिव है! आपको बिना Ad के +2 ❤️ मिल गए।");
-        return;
-      }
-
-      // Agar bache hue hearts hain toh ad na chalayein
       if (AppState.hearts > 0) {
         alert(`आपके पास अभी ${AppState.hearts} ❤️ हार्ट्स मौजूद हैं! पहले अपने हार्ट्स खत्म कर लें।`);
         closeHeartsModal();
@@ -1185,23 +1159,19 @@
       btn.innerHTML = '<span class="ad-policy-badge">AD</span> <span>⏳</span> विज्ञापन लोड हो रहा है...';
 
       AdService.showRewarded(() => {
-        grantTwoHearts("🎉 बहुत अच्छे! आपके खाते में +2 ❤️ हार्ट्स जोड़ दिए गए हैं।");
+        let current = parseInt(AppState.hearts) || 0;
+        current = Math.min(AppState.maxHearts, current + 2);
+        AppState.hearts = current;
+
+        saveStats();
+        updateHeaderStatsDisplay();
+        closeHeartsModal();
+
+        AudioFX.winFanfare();
+        triggerConfetti();
+        alert("🎉 बहुत अच्छे! आपके खाते में +2 ❤️ हार्ट्स जोड़ दिए गए हैं।");
         btn.innerHTML = '<span class="ad-policy-badge">AD</span> <span>🎬</span> 2❤ पायें (मुफ़्त वीडियो विज्ञापन)';
       });
-    }
-
-    function grantTwoHearts(msg) {
-      let current = parseInt(AppState.hearts) || 0;
-      current = Math.min(AppState.maxHearts, current + 2);
-      AppState.hearts = current;
-
-      saveStats();
-      updateHeaderStatsDisplay();
-      closeHeartsModal();
-
-      AudioFX.winFanfare();
-      triggerConfetti();
-      alert(msg);
     }
 
     function refillHeartsWithGems() {
@@ -1404,7 +1374,7 @@
         { place: 'सैकड़ा (Hundreds)', value: '100', desc: '100 का समूह (Group of 100)', icon: '🟠', speech: 'सैकड़ा का मतलब एक सौ' },
         { place: 'हज़ार (Thousands)', value: '1,000', desc: '1000 का समूह', icon: '🔴', speech: 'हज़ार का मतलब एक हज़ार' },
         { place: 'दस हज़ार (Ten Thousands)', value: '10,000', desc: '10 हज़ार का समूह', icon: '🟣', speech: 'दस हज़ार' },
-        { place: 'लाख (Lakh / Hundred Thousands)', value: '1,00,000', desc: '1 लाख', icon: '💎', speech: 'एक लाख' },
+        { place: 'लाख (Lakh / Hundred Thousands)', value: '1,00,00,000', desc: '1 लाख', icon: '💎', speech: 'एक लाख' },
         { place: 'दस लाख (Ten Lakhs / Million)', value: '10,00,000', desc: '10 लाख', icon: '👑', speech: 'दस लाख' },
         { place: 'करोड़ (Crore / Ten Millions)', value: '1,00,00,000', desc: '1 करोड़', icon: '🏆', speech: 'एक करोड़' }
       ],
@@ -2015,7 +1985,7 @@
     }
 
     // =========================================================================
-    // HINT & 10-MINUTE PASS TRIGGER ENGINE
+    // HINT: 5-MIN FREE PASS & DIRECT AUTO-SELECTION
     // =========================================================================
     function applyHintLogic() {
       if (!AppState.currentChipItem || AppState.chipAnswered) return;
@@ -2026,12 +1996,15 @@
       if (currentIdx < targetList.length) {
         const nextCorrectChip = targetList[currentIdx];
 
-        // Direct push to tray
+        // Seedhe Tray mein push karein
         AppState.assembledChips.push(nextCorrectChip);
+
+        // Sound aur speech
         AudioFX.success();
         const speechLang = AppState.currentChipItem.lang === 'en' ? 'en-US' : 'hi-IN';
         speakText(nextCorrectChip, speechLang);
 
+        // Refresh UI
         resetChipActionButton();
         renderTrayAndSourcePool();
 
@@ -2053,17 +2026,23 @@
         return;
       }
 
+      // Agar 5 minutes ka pass active hai, toh bina Ad ke turant hint auto-select hoga
+      if (isFreeHintActive()) {
+        applyHintLogic();
+        return;
+      }
+
       // AdMob Rewarded Video for Hint
       AdService.showRewarded(() => {
-        // 1. Hint dekar agla sahi chip auto-select karein
-        applyHintLogic();
-
-        // 2. Agle 10 minutes ke liye Heart button ko free kar dein
-        AppState.freeHeartPassUntil = Date.now() + (10 * 60 * 1000);
+        // 5 Minutes ka pass set karein
+        AppState.freeHintPassUntil = Date.now() + (5 * 60 * 1000);
         saveStats();
         updateHeaderStatsDisplay();
 
-        alert("✨ संकेत मिल गया! साथ ही अगले 10 मिनट के लिए आपका Heart Button बिल्कुल FREE कर दिया गया है!");
+        // Agla sahi chip automatic select karein
+        applyHintLogic();
+
+        alert("🎉 संकेत मिल गया! अगले 5 मिनट के लिए संकेत (Hint) बिल्कुल FREE रहेगा!");
       });
     }
 
