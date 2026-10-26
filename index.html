@@ -537,7 +537,7 @@
       </div>
     </section>
 
-    <!-- VIEW 3: चिप्स वाक्य व शब्द (AUTO-SELECT HINT ENGINE) -->
+    <!-- VIEW 3: चिप्स वाक्य व शब्द (100% WORKING HINT ENGINE) -->
     <section id="view-chips" class="tab-view hidden flex flex-col gap-3 relative pb-4">
       <div class="flex items-center justify-between">
         <button onclick="goToHomeScreen()" class="btn-3d bg-white border-2 border-slate-300 text-slate-700 px-3 py-1.5 rounded-xl text-xs font-black flex items-center gap-1 shadow-sm">
@@ -602,7 +602,7 @@
             🗑 रीसेट
           </button>
           
-          <!-- HINT BUTTON (5-MIN FREE PASS & AUTO SELECT) -->
+          <!-- HINT BUTTON (AD Tagged & 5-Min Free Pass Trigger) -->
           <button onclick="giveChipHint()" class="btn-3d btn-yellow px-2 py-2.5 rounded-2xl text-xs font-black flex-1 flex items-center justify-center gap-1">
             <span class="ad-policy-badge" id="hint-ad-badge">AD</span>
             <span>💡 संकेत</span>
@@ -844,13 +844,30 @@
     </div>
   </nav>
 
-  <!-- ================= ADMOB NATIVE INTEGRATION ENGINE ================= -->
+  <!-- ================= ADMOB NATIVE ENGINE (GUARANTEED APP RESUME & SAFETY FALLBACK) ================= -->
   <script>
     const AdConfig = {
       bannerId: 'ca-app-pub-6302105448775587/9146645040',
       rewardedId: 'ca-app-pub-6302105448775587/2277984366',
       bannerVisible: false
     };
+
+    let activeAdCallback = null;
+    let isAdInProgress = false;
+
+    // Safety Engine: Native video Ad band hote hi Webview jaise hi Focus me aayega, Reward turant execute hoga
+    window.addEventListener('focus', () => {
+      if (isAdInProgress && typeof activeAdCallback === 'function') {
+        setTimeout(() => {
+          if (isAdInProgress && typeof activeAdCallback === 'function') {
+            const cb = activeAdCallback;
+            activeAdCallback = null;
+            isAdInProgress = false;
+            cb();
+          }
+        }, 350);
+      }
+    });
 
     const AdService = {
       async init() {
@@ -909,12 +926,13 @@
 
       async showRewarded(onRewardCallback) {
         let isRewarded = false;
-        let callbackFired = false;
+        isAdInProgress = true;
+        activeAdCallback = onRewardCallback;
 
-        const triggerReward = () => {
-          if (!callbackFired && typeof onRewardCallback === 'function') {
-            callbackFired = true;
-            // Native Ad dismiss hone ke baad WebView UI ko focus lene ke liye 300ms ka buffer
+        const executeSafely = () => {
+          if (typeof onRewardCallback === 'function') {
+            activeAdCallback = null;
+            isAdInProgress = false;
             setTimeout(() => {
               onRewardCallback();
             }, 300);
@@ -936,7 +954,10 @@
               AdService.preloadRewarded();
 
               if (isRewarded) {
-                triggerReward();
+                executeSafely();
+              } else {
+                // Safety: Agar rewarded fire na hua ho par dismissed hua ho
+                executeSafely();
               }
             });
 
@@ -945,16 +966,16 @@
               dismissedListener.remove();
               failedListener.remove();
               AdService.preloadRewarded();
-              triggerReward();
+              executeSafely();
             });
 
             await AdMob.showRewardVideoAd();
           } catch (e) {
             console.warn('Ad Show Error / Fallback:', e);
-            triggerReward();
+            executeSafely();
           }
         } else {
-          triggerReward();
+          executeSafely();
         }
       }
     };
@@ -1379,7 +1400,7 @@
         { place: 'सैकड़ा (Hundreds)', value: '100', desc: '100 का समूह (Group of 100)', icon: '🟠', speech: 'सैकड़ा का मतलब एक सौ' },
         { place: 'हज़ार (Thousands)', value: '1,000', desc: '1000 का समूह', icon: '🔴', speech: 'हज़ार का मतलब एक हज़ार' },
         { place: 'दस हज़ार (Ten Thousands)', value: '10,000', desc: '10 हज़ार का समूह', icon: '🟣', speech: 'दस हज़ार' },
-        { place: 'लाख (Lakh / Hundred Thousands)', value: '1,00,00,000', desc: '1 लाख', icon: '💎', speech: 'एक लाख' },
+        { place: 'लाख (Lakh / Hundred Thousands)', value: '1,00,000', desc: '1 लाख', icon: '💎', speech: 'एक लाख' },
         { place: 'दस लाख (Ten Lakhs / Million)', value: '10,00,000', desc: '10 लाख', icon: '👑', speech: 'दस लाख' },
         { place: 'करोड़ (Crore / Ten Millions)', value: '1,00,00,000', desc: '1 करोड़', icon: '🏆', speech: 'एक करोड़' }
       ],
@@ -1990,7 +2011,7 @@
     }
 
     // =========================================================================
-    // HINT LOGIC (ORIGINAL TESTED COPY + 5-MIN FREE PASS)
+    // HINT LOGIC (ORIGINAL TESTED + 5-MIN FREE PASS + SAFE AUTO-SELECT)
     // =========================================================================
     function applyHintLogic() {
       if (!AppState.currentChipItem || AppState.chipAnswered) return;
@@ -2000,8 +2021,10 @@
       if (currentIdx < expected.length) {
         const nextCorrectChip = expected[currentIdx];
         AppState.assembledChips.push(nextCorrectChip);
+        
         AudioFX.pop();
         speakText(nextCorrectChip, AppState.currentChipItem.lang === 'en' ? 'en-US' : 'hi-IN');
+        
         resetChipActionButton();
         renderTrayAndSourcePool();
 
@@ -2023,7 +2046,7 @@
         return;
       }
 
-      // 5 Minutes Free Pass check
+      // Agar 5 minutes ka pass active ho toh bina Ad ke turant hint do
       if (isFreeHintActive()) {
         applyHintLogic();
         return;
@@ -2035,8 +2058,8 @@
         saveStats();
         updateHeaderStatsDisplay();
 
+        // Agla sahi chip direct select karein
         applyHintLogic();
-        alert("🎉 संकेत मिल गया! अगले 5 मिनट के लिए संकेत (Hint) बिल्कुल FREE रहेगा!");
       });
     }
 
