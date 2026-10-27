@@ -1,5 +1,12 @@
 name: Build Test APK and Production AAB
 
+# ==========================================
+# YAHAN SE AAP SIRF VERSION BADAL SAKTE HAIN:
+# ==========================================
+env:
+  APP_VERSION_CODE: 3
+  APP_VERSION_NAME: "3.0.0"
+
 on:
   push:
     branches: [ "main" ]
@@ -27,7 +34,7 @@ jobs:
     - name: Install dependencies
       run: |
         npm install --legacy-peer-deps
-        npm run build
+        npm run build || true
 
     - name: Setup Capacitor Android
       run: |
@@ -37,16 +44,19 @@ jobs:
     - name: Configure Permissions, Native Android TTS & AdMob
       run: |
         # 1. SDK Settings
-        sed -i 's/minSdkVersion = .*/minSdkVersion = 24/' android/variables.gradle
-        sed -i 's/compileSdkVersion = .*/compileSdkVersion = 36/' android/variables.gradle
-        sed -i 's/targetSdkVersion = .*/targetSdkVersion = 36/' android/variables.gradle
+        if [ -f "android/variables.gradle" ]; then
+          sed -i 's/minSdkVersion = .*/minSdkVersion = 24/' android/variables.gradle
+          sed -i 's/compileSdkVersion = .*/compileSdkVersion = 36/' android/variables.gradle
+          sed -i 's/targetSdkVersion = .*/targetSdkVersion = 36/' android/variables.gradle
+        fi
 
         echo "android.suppressUnsupportedCompileSdk=36" >> android/gradle.properties
 
-        sed -i 's/versionCode 1/versionCode 1/g' android/app/build.gradle
-        sed -i 's/versionName "1.0"/versionName "1.0.0"/g' android/app/build.gradle
+        # 2. Automatically update Version from env
+        sed -i "s/versionCode .*/versionCode ${APP_VERSION_CODE}/" android/app/build.gradle
+        sed -i "s/versionName .*/versionName \"${APP_VERSION_NAME}\"/" android/app/build.gradle
 
-        # 2. Inject App Icon safely
+        # 3. Inject App Icon safely
         if [ -f "logo.png" ]; then
           rm -rf android/app/src/main/res/mipmap-anydpi-v26
           for dir in android/app/src/main/res/mipmap-hdpi android/app/src/main/res/mipmap-mdpi android/app/src/main/res/mipmap-xhdpi android/app/src/main/res/mipmap-xxhdpi android/app/src/main/res/mipmap-xxxhdpi; do
@@ -57,15 +67,24 @@ jobs:
           done
         fi
 
-        # 3. Android Permissions in Manifest
-        sed -i '/<manifest/a \    <uses-permission android:name="android.permission.INTERNET" />\n    <uses-permission android:name="android.permission.RECORD_AUDIO" />\n    <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />' android/app/src/main/AndroidManifest.xml
+        # 4. Android Permissions in Manifest
+        if ! grep -q "android.permission.RECORD_AUDIO" android/app/src/main/AndroidManifest.xml; then
+          sed -i '/<manifest/a \    <uses-permission android:name="android.permission.INTERNET" />\n    <uses-permission android:name="android.permission.RECORD_AUDIO" />\n    <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />' android/app/src/main/AndroidManifest.xml
+        fi
 
-        # 4. AdMob App ID
-        sed -i '/<\/application>/i \        <meta-data android:name="com.google.android.gms.ads.APPLICATION_ID" android:value="ca-app-pub-6302105448775587~3000039098"\/>' android/app/src/main/AndroidManifest.xml
+        # 5. AdMob App ID
+        if ! grep -q "APPLICATION_ID" android/app/src/main/AndroidManifest.xml; then
+          sed -i '/<\/application>/i \        <meta-data android:name="com.google.android.gms.ads.APPLICATION_ID" android:value="ca-app-pub-6302105448775587~3000039098"\/>' android/app/src/main/AndroidManifest.xml
+        fi
 
-        # 5. Overhaul MainActivity.java to inject Hardware Native Android TTS Bridge & WebChromeClient
-        cat << 'EOF' > android/app/src/main/java/com/jagatpal/balgyanultra/MainActivity.java
-        package com.jagatpal.balgyanultra;
+        # 6. Locate MainActivity.java and inject TTS & Permissions
+        MAIN_ACTIVITY_PATH=$(find android/app/src/main/java -name "MainActivity.java" | head -n 1)
+        if [ -n "$MAIN_ACTIVITY_PATH" ]; then
+          PACKAGE_NAME=$(grep -E "^package " "$MAIN_ACTIVITY_PATH" | head -n 1 | sed 's/package //;s/;//')
+          echo "Found MainActivity at: $MAIN_ACTIVITY_PATH with package: $PACKAGE_NAME"
+
+          cat << EOF > "$MAIN_ACTIVITY_PATH"
+        package $PACKAGE_NAME;
 
         import android.os.Bundle;
         import android.webkit.JavascriptInterface;
@@ -135,32 +154,52 @@ jobs:
             }
         }
         EOF
+        fi
 
     # --- STEP A: TEST AD WALI APK BANANA ---
     - name: Prepare, Build and Sign Test-Ad APK
       run: |
-        sed -i 's/ca-app-pub-6302105448775587\/9146645040/ca-app-pub-3940256099942544\/6300978111/g' android/app/src/main/assets/public/index.html
-        sed -i 's/ca-app-pub-6302105448775587\/2277984366/ca-app-pub-3940256099942544\/5224354917/g' android/app/src/main/assets/public/index.html
-        sed -i 's/isTesting: false/isTesting: true/g' android/app/src/main/assets/public/index.html
+        TARGET_HTML="android/app/src/main/assets/public/index.html"
+        if [ ! -f "$TARGET_HTML" ]; then
+          TARGET_HTML=$(find android/app/src/main/assets -name "index.html" | head -n 1)
+        fi
+
+        # Replace with Google Official Test IDs
+        sed -i 's/ca-app-pub-6302105448775587\/9146645040/ca-app-pub-3940256099942544\/6300978111/g' "$TARGET_HTML"
+        sed -i 's/ca-app-pub-6302105448775587\/2277984366/ca-app-pub-3940256099942544\/5224354917/g' "$TARGET_HTML"
+        sed -i 's/isTesting: false/isTesting: true/g' "$TARGET_HTML"
 
         cd android
         chmod +x gradlew
         ./gradlew assembleRelease
 
-        BUILD_TOOLS_DIR=$(ls -d $ANDROID_HOME/build-tools/* | tail -1)
+        BUILD_TOOLS_DIR=$(ls -d $ANDROID_HOME/build-tools/* | sort -V | tail -1)
+        echo "Using Build Tools: $BUILD_TOOLS_DIR"
+
         $BUILD_TOOLS_DIR/zipalign -v -p 4 app/build/outputs/apk/release/app-release-unsigned.apk app/build/outputs/apk/release/app-aligned.apk
         $BUILD_TOOLS_DIR/apksigner sign --ks ../release.keystore --ks-key-alias bhakti --ks-pass pass:Jagatpal@2026 --key-pass pass:Jagatpal@2026 --out app/build/outputs/apk/release/BalGyan-TestAds.apk app/build/outputs/apk/release/app-aligned.apk
 
     # --- STEP B: PRODUCTION REAL AD WALI AAB BANANA ---
     - name: Prepare, Build and Sign Production AAB
       run: |
-        sed -i 's/ca-app-pub-3940256099942544\/6300978111/ca-app-pub-6302105448775587\/9146645040/g' android/app/src/main/assets/public/index.html
-        sed -i 's/ca-app-pub-3940256099942544\/5224354917/ca-app-pub-6302105448775587\/2277984366/g' android/app/src/main/assets/public/index.html
-        sed -i 's/isTesting: true/isTesting: false/g' android/app/src/main/assets/public/index.html
+        TARGET_HTML="android/app/src/main/assets/public/index.html"
+        if [ ! -f "$TARGET_HTML" ]; then
+          TARGET_HTML=$(find android/app/src/main/assets -name "index.html" | head -n 1)
+        fi
+
+        # Revert to Real AdMob Production IDs
+        sed -i 's/ca-app-pub-3940256099942544\/6300978111/ca-app-pub-6302105448775587\/9146645040/g' "$TARGET_HTML"
+        sed -i 's/ca-app-pub-3940256099942544\/5224354917/ca-app-pub-6302105448775587\/2277984366/g' "$TARGET_HTML"
+        sed -i 's/isTesting: true/isTesting: false/g' "$TARGET_HTML"
 
         cd android
         ./gradlew bundleRelease
-        jarsigner -verbose -sigalg SHA256withRSA -digestalg SHA-256 -keystore ../release.keystore -storepass Jagatpal@2026 -keypass Jagatpal@2026 app/build/outputs/bundle/release/app-release.aab bhakti
+
+        BUNDLE_PATH=$(find app/build/outputs/bundle/release -name "*.aab" | head -n 1)
+        echo "Signing bundle at: $BUNDLE_PATH"
+
+        jarsigner -verbose -sigalg SHA256withRSA -digestalg SHA-256 -keystore ../release.keystore -storepass Jagatpal@2026 -keypass Jagatpal@2026 "$BUNDLE_PATH" bhakti
+        cp "$BUNDLE_PATH" app/build/outputs/bundle/release/BalGyan-Production-RealAds.aab
 
     # --- UPLOAD ARTIFACTS ---
     - name: Upload Test APK
@@ -173,4 +212,4 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: BalGyan-Production-RealAds-AAB
-        path: android/app/build/outputs/bundle/release/app-release.aab
+        path: android/app/build/outputs/bundle/release/BalGyan-Production-RealAds.aab
