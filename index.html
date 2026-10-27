@@ -171,7 +171,6 @@
       animation: fadeInModal 0.25s ease-out forwards;
     }
 
-    /* Families Policy Compliant Ad Badge */
     .ad-policy-badge {
       background-color: #1e293b;
       color: #facc15;
@@ -537,7 +536,7 @@
       </div>
     </section>
 
-    <!-- VIEW 3: चिप्स वाक्य व शब्द (100% WORKING HINT ENGINE) -->
+    <!-- VIEW 3: चिप्स वाक्य व शब्द (100% FIXED AUTO-SELECT HINT) -->
     <section id="view-chips" class="tab-view hidden flex flex-col gap-3 relative pb-4">
       <div class="flex items-center justify-between">
         <button onclick="goToHomeScreen()" class="btn-3d bg-white border-2 border-slate-300 text-slate-700 px-3 py-1.5 rounded-xl text-xs font-black flex items-center gap-1 shadow-sm">
@@ -602,10 +601,10 @@
             🗑 रीसेट
           </button>
           
-          <!-- HINT BUTTON (AD Tagged & 5-Min Free Pass Trigger) -->
-          <button onclick="giveChipHint()" class="btn-3d btn-yellow px-2 py-2.5 rounded-2xl text-xs font-black flex-1 flex items-center justify-center gap-1">
+          <!-- HINT BUTTON (5-MIN FREE PASS & AUTO SELECT) -->
+          <button onclick="giveChipHint()" id="btn-hint-main" class="btn-3d btn-yellow px-2 py-2.5 rounded-2xl text-xs font-black flex-1 flex items-center justify-center gap-1">
             <span class="ad-policy-badge" id="hint-ad-badge">AD</span>
-            <span>💡 संकेत</span>
+            <span id="hint-btn-label">💡 संकेत</span>
           </button>
           
           <button onclick="handleChipMainButtonClick()" id="btn-chip-main-action" class="btn-3d btn-green px-5 py-2.5 rounded-2xl text-sm font-black flex-[2]">
@@ -844,7 +843,7 @@
     </div>
   </nav>
 
-  <!-- ================= ADMOB NATIVE ENGINE (GUARANTEED APP RESUME & SAFETY FALLBACK) ================= -->
+  <!-- ================= ADMOB NATIVE ENGINE ================= -->
   <script>
     const AdConfig = {
       bannerId: 'ca-app-pub-6302105448775587/9146645040',
@@ -852,22 +851,7 @@
       bannerVisible: false
     };
 
-    let activeAdCallback = null;
     let isAdInProgress = false;
-
-    // Safety Engine: Native video Ad band hote hi Webview jaise hi Focus me aayega, Reward turant execute hoga
-    window.addEventListener('focus', () => {
-      if (isAdInProgress && typeof activeAdCallback === 'function') {
-        setTimeout(() => {
-          if (isAdInProgress && typeof activeAdCallback === 'function') {
-            const cb = activeAdCallback;
-            activeAdCallback = null;
-            isAdInProgress = false;
-            cb();
-          }
-        }, 350);
-      }
-    });
 
     const AdService = {
       async init() {
@@ -925,14 +909,13 @@
       },
 
       async showRewarded(onRewardCallback) {
-        let isRewarded = false;
+        if (isAdInProgress) return;
         isAdInProgress = true;
-        activeAdCallback = onRewardCallback;
+        let rewarded = false;
 
-        const executeSafely = () => {
+        const completeCallback = () => {
+          isAdInProgress = false;
           if (typeof onRewardCallback === 'function') {
-            activeAdCallback = null;
-            isAdInProgress = false;
             setTimeout(() => {
               onRewardCallback();
             }, 300);
@@ -945,20 +928,14 @@
             await this.preloadRewarded();
 
             const rewardedListener = await AdMob.addListener(RewardAdEvents ? RewardAdEvents.Rewarded : 'onRewarded', () => {
-              isRewarded = true;
+              rewarded = true;
             });
 
             const dismissedListener = await AdMob.addListener(RewardAdEvents ? RewardAdEvents.Dismissed : 'onDismissed', async () => {
               rewardedListener.remove();
               dismissedListener.remove();
               AdService.preloadRewarded();
-
-              if (isRewarded) {
-                executeSafely();
-              } else {
-                // Safety: Agar rewarded fire na hua ho par dismissed hua ho
-                executeSafely();
-              }
+              completeCallback();
             });
 
             const failedListener = await AdMob.addListener(RewardAdEvents ? RewardAdEvents.FailedToShow : 'onFailedToShow', async () => {
@@ -966,16 +943,16 @@
               dismissedListener.remove();
               failedListener.remove();
               AdService.preloadRewarded();
-              executeSafely();
+              completeCallback();
             });
 
             await AdMob.showRewardVideoAd();
           } catch (e) {
-            console.warn('Ad Show Error / Fallback:', e);
-            executeSafely();
+            console.warn('Ad Show Error:', e);
+            completeCallback();
           }
         } else {
-          executeSafely();
+          completeCallback();
         }
       }
     };
@@ -992,9 +969,7 @@
         try {
           window.AndroidTTS.speak(cleanStr, lang);
           return;
-        } catch (e) {
-          console.warn("AndroidTTS error:", e);
-        }
+        } catch (e) {}
       }
 
       if ('speechSynthesis' in window) {
@@ -1055,8 +1030,8 @@
       streak: parseInt(localStorage.getItem('bg_streak') || '3'),
       gems: parseInt(localStorage.getItem('bg_gems') || '120'),
       isMuted: localStorage.getItem('bg_muted') === 'true',
-      
-      // 5 MINUTES FREE HINT PASS TIMESTAMP
+
+      // 5-MIN FREE HINT PASS TIMESTAMP
       freeHintPassUntil: parseInt(localStorage.getItem('bg_free_hint_until') || '0'),
 
       activeCategory: 'home',
@@ -1092,7 +1067,9 @@
     };
 
     function isFreeHintActive() {
-      return Date.now() < (AppState.freeHintPassUntil || 0);
+      const now = Date.now();
+      const pass = parseInt(localStorage.getItem('bg_free_hint_until') || '0');
+      return now < pass;
     }
 
     function saveStats() {
@@ -1103,7 +1080,7 @@
       localStorage.setItem('bg_muted', AppState.isMuted);
       localStorage.setItem('bg_sent_done', AppState.completedSentencesCount);
       localStorage.setItem('bg_words_done', AppState.completedWordsCount);
-      localStorage.setItem('bg_free_hint_until', AppState.freeHintPassUntil || 0);
+      localStorage.setItem('bg_free_hint_until', AppState.freeHintPassUntil);
       updateHeaderStatsDisplay();
     }
 
@@ -1115,15 +1092,23 @@
       document.getElementById('sound-btn').innerText = AppState.isMuted ? '🔇' : '🔊';
 
       const hintBadge = document.getElementById('hint-ad-badge');
-      if (hintBadge) {
+      const hintLabel = document.getElementById('hint-btn-label');
+
+      if (hintBadge && hintLabel) {
         if (isFreeHintActive()) {
+          const pass = parseInt(localStorage.getItem('bg_free_hint_until') || '0');
+          const secondsLeft = Math.max(0, Math.ceil((pass - Date.now()) / 1000));
+          const min = Math.floor(secondsLeft / 60);
+          const sec = secondsLeft % 60;
           hintBadge.innerText = 'FREE';
           hintBadge.style.backgroundColor = '#10b981';
           hintBadge.style.color = '#ffffff';
+          hintLabel.innerText = `💡 संकेत (${min}:${sec < 10 ? '0' : ''}${sec})`;
         } else {
           hintBadge.innerText = 'AD';
           hintBadge.style.backgroundColor = '#1e293b';
           hintBadge.style.color = '#facc15';
+          hintLabel.innerText = '💡 संकेत';
         }
       }
 
@@ -1136,6 +1121,13 @@
       const achGems = document.getElementById('achieve-gems');
       if (achGems) achGems.innerText = AppState.gems;
     }
+
+    // Interval to refresh hint timer UI every second
+    setInterval(() => {
+      if (AppState.activeCategory === 'chips') {
+        updateHeaderStatsDisplay();
+      }
+    }, 1000);
 
     function toggleAudioMute() {
       AppState.isMuted = !AppState.isMuted;
@@ -1948,6 +1940,7 @@
       document.getElementById('chip-progress-text').innerText = `${solvedCount} / ${totalBankCount} हल हुआ`;
 
       renderTrayAndSourcePool();
+      updateHeaderStatsDisplay();
     }
 
     function renderTrayAndSourcePool() {
@@ -2011,20 +2004,32 @@
     }
 
     // =========================================================================
-    // HINT LOGIC (ORIGINAL TESTED + 5-MIN FREE PASS + SAFE AUTO-SELECT)
+    // 100% BULLETPROOF AUTO-SELECT HINT LOGIC (NO MORE AD SPAM)
     // =========================================================================
     function applyHintLogic() {
       if (!AppState.currentChipItem || AppState.chipAnswered) return;
-      const expected = AppState.currentChipItem.chips;
-      const currentIdx = AppState.assembledChips.length;
 
-      if (currentIdx < expected.length) {
-        const nextCorrectChip = expected[currentIdx];
+      const expected = AppState.currentChipItem.chips;
+
+      // 1. Clear any mismatch already picked
+      let currentLen = AppState.assembledChips.length;
+      for (let i = 0; i < currentLen; i++) {
+        if (cleanToken(AppState.assembledChips[i]) !== cleanToken(expected[i])) {
+          AppState.assembledChips = AppState.assembledChips.slice(0, i);
+          break;
+        }
+      }
+
+      currentLen = AppState.assembledChips.length;
+
+      // 2. Select exactly the next required word
+      if (currentLen < expected.length) {
+        const nextCorrectChip = expected[currentLen];
         AppState.assembledChips.push(nextCorrectChip);
-        
+
         AudioFX.pop();
         speakText(nextCorrectChip, AppState.currentChipItem.lang === 'en' ? 'en-US' : 'hi-IN');
-        
+
         resetChipActionButton();
         renderTrayAndSourcePool();
 
@@ -2033,32 +2038,32 @@
           if (btn) btn.classList.add('pulse-next');
         }
       } else {
-        alert("सभी चिप्स पहले ही चुने जा चुके हैं! '✓ जाँचें' बटन दबाएँ।");
+        alert("सभी चिप्स पहले ही सही क्रम में चुने जा चुके हैं! '✓ जाँचें' बटन दबाएँ।");
       }
     }
 
     function giveChipHint() {
       if (!AppState.currentChipItem || AppState.chipAnswered) return;
       const expected = AppState.currentChipItem.chips;
-      const currentIdx = AppState.assembledChips.length;
-      if (currentIdx >= expected.length) {
+      
+      if (AppState.assembledChips.length >= expected.length) {
         alert("सभी चिप्स पहले से चुने हुए हैं!");
         return;
       }
 
-      // Agar 5 minutes ka pass active ho toh bina Ad ke turant hint do
+      // Check strictly if 5-minute Free Pass is currently active
       if (isFreeHintActive()) {
         applyHintLogic();
         return;
       }
 
-      // AdMob Rewarded Video
+      // If pass expired, show exactly 1 Rewarded Ad, then activate 5-min pass
       AdService.showRewarded(() => {
-        AppState.freeHintPassUntil = Date.now() + (5 * 60 * 1000);
-        saveStats();
-        updateHeaderStatsDisplay();
+        const fiveMinutesLater = Date.now() + (5 * 60 * 1000);
+        AppState.freeHintPassUntil = fiveMinutesLater;
+        localStorage.setItem('bg_free_hint_until', fiveMinutesLater.toString());
 
-        // Agla sahi chip direct select karein
+        updateHeaderStatsDisplay();
         applyHintLogic();
       });
     }
@@ -2490,9 +2495,7 @@
           const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
           stream.getTracks().forEach(track => track.stop());
         }
-      } catch (err) {
-        console.warn("Microphone prompt fallback:", err);
-      }
+      } catch (err) {}
 
       const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
 
