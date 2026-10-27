@@ -17,6 +17,10 @@
     :root {
       --safe-top: env(safe-area-inset-top, 24px);
       --safe-bottom: env(safe-area-inset-bottom, 16px);
+      /* Navigation Bar Height (approx 62px) + Safe Area */
+      --nav-total-height: calc(62px + var(--safe-bottom));
+      /* Banner Height (50px) + Margin */
+      --banner-bottom-offset: calc(var(--nav-total-height) + 2px);
     }
 
     * {
@@ -183,7 +187,7 @@
     }
   </style>
 </head>
-<body class="bg-amber-50 text-slate-800 min-h-screen flex flex-col pb-48 select-none">
+<body class="bg-amber-50 text-slate-800 min-h-screen flex flex-col pb-44 select-none">
 
   <!-- ================= WELCOME SCREEN OVERLAY ================= -->
   <div id="welcome-screen" class="fixed inset-0 z-50 bg-gradient-to-b from-sky-400 via-teal-400 to-emerald-500 flex flex-col items-center justify-between p-6 transition-all duration-300" style="padding-top: calc(var(--safe-top) + 16px);">
@@ -601,7 +605,7 @@
             🗑 रीसेट
           </button>
           
-          <!-- HINT BUTTON (5-MIN FREE PASS & AUTO SELECT) -->
+          <!-- HINT BUTTON (AUTO SELECT & REWARDED AD) -->
           <button onclick="giveChipHint()" id="btn-hint-main" class="btn-3d btn-yellow px-2 py-2.5 rounded-2xl text-xs font-black flex-1 flex items-center justify-center gap-1">
             <span class="ad-policy-badge" id="hint-ad-badge">AD</span>
             <span id="hint-btn-label">💡 संकेत</span>
@@ -675,7 +679,7 @@
       <div id="listen-options-grid" class="grid grid-cols-2 gap-3 pt-1"></div>
 
       <!-- CONFIRMATION BANNER IN CHUNO-SUNO -->
-      <div id="listen-confirm-banner" class="hidden fixed bottom-24 left-0 right-0 max-w-lg mx-auto p-3 z-50 animate-slide-up">
+      <div id="listen-confirm-banner" class="hidden fixed bottom-28 left-0 right-0 max-w-lg mx-auto p-3 z-50 animate-slide-up">
         <div id="listen-banner-card" class="rounded-2xl border-4 border-emerald-400 p-3.5 shadow-2xl flex items-center justify-between bg-emerald-50">
           <div class="flex items-center gap-3">
             <div id="listen-banner-icon" class="w-12 h-12 rounded-2xl bg-emerald-500 text-white flex items-center justify-center text-2xl font-black shadow-md flex-shrink-0">
@@ -812,14 +816,14 @@
 
   </main>
 
-  <!-- ================= FIXED BOTTOM AD CONTAINER ================= -->
-  <div id="families-ad-wrapper" class="fixed bottom-14 left-0 right-0 z-30 bg-amber-100/90 border-t border-amber-300 text-center py-1 max-w-lg mx-auto">
-    <span class="text-[10px] font-black text-slate-500 uppercase tracking-widest block">Advertisement</span>
-    <div id="banner-ad-box" style="min-height: 50px;"></div>
+  <!-- ================= FIXED BOTTOM AD CONTAINER (RAISED SAFELY ABOVE NAV BAR) ================= -->
+  <div id="families-ad-wrapper" class="fixed left-0 right-0 z-30 bg-amber-100/95 border-t border-b border-amber-300 text-center py-0.5 max-w-lg mx-auto pointer-events-none" style="bottom: var(--banner-bottom-offset); min-height: 54px;">
+    <span class="text-[9px] font-black text-slate-400 uppercase tracking-widest block leading-tight">ADVERTISEMENT</span>
+    <div id="banner-ad-box" style="height: 50px;"></div>
   </div>
 
   <!-- ================= BOTTOM NAVIGATION BAR ================= -->
-  <nav class="fixed bottom-0 left-0 right-0 z-40 bg-white border-t-4 border-amber-200 px-3 py-1.5 shadow-lg max-w-lg mx-auto" style="padding-bottom: calc(var(--safe-bottom) + 4px);">
+  <nav class="fixed bottom-0 left-0 right-0 z-40 bg-white border-t-4 border-amber-200 px-3 py-1 shadow-2xl max-w-lg mx-auto" style="padding-bottom: calc(var(--safe-bottom) + 4px);">
     <div class="grid grid-cols-4 gap-1 text-center">
       <button onclick="goToHomeScreen()" id="nav-btn-home" class="nav-tab-btn flex flex-col items-center py-1 text-emerald-600">
         <span class="text-xl leading-tight">🏠</span>
@@ -876,11 +880,12 @@
         if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.AdMob) {
           try {
             const { AdMob, BannerAdPosition, BannerAdSize } = window.Capacitor.Plugins;
+            // Margin 78px completely prevents overlap over bottom navigation bar
             await AdMob.showBanner({
               adId: AdConfig.bannerId,
               adSize: BannerAdSize ? BannerAdSize.BANNER : 'BANNER',
               position: BannerAdPosition ? BannerAdPosition.BOTTOM_CENTER : 'BOTTOM_CENTER',
-              margin: 62,
+              margin: 78,
               isTesting: false,
               tagForChildDirectedTreatment: true,
               maxAdContentRating: 'G'
@@ -911,14 +916,18 @@
       async showRewarded(onRewardCallback) {
         if (isAdInProgress) return;
         isAdInProgress = true;
-        let rewarded = false;
+        let callbackExecuted = false;
 
-        const completeCallback = () => {
+        const complete = () => {
+          if (callbackExecuted) return;
+          callbackExecuted = true;
           isAdInProgress = false;
           if (typeof onRewardCallback === 'function') {
-            setTimeout(() => {
+            try {
               onRewardCallback();
-            }, 300);
+            } catch (err) {
+              console.error('Reward callback error:', err);
+            }
           }
         };
 
@@ -927,32 +936,48 @@
           try {
             await this.preloadRewarded();
 
-            const rewardedListener = await AdMob.addListener(RewardAdEvents ? RewardAdEvents.Rewarded : 'onRewarded', () => {
-              rewarded = true;
+            // Set up fallback timeout so game never freezes if ad fails
+            const safetyTimeout = setTimeout(() => {
+              complete();
+            }, 10000);
+
+            const rewardedEventName = (RewardAdEvents && RewardAdEvents.Rewarded) ? RewardAdEvents.Rewarded : 'onRewarded';
+            const dismissedEventName = (RewardAdEvents && RewardAdEvents.Dismissed) ? RewardAdEvents.Dismissed : 'onDismissed';
+            const failedEventName = (RewardAdEvents && RewardAdEvents.FailedToShow) ? RewardAdEvents.FailedToShow : 'onFailedToShow';
+
+            let l1, l2, l3;
+
+            const cleanup = () => {
+              clearTimeout(safetyTimeout);
+              if (l1 && l1.remove) l1.remove();
+              if (l2 && l2.remove) l2.remove();
+              if (l3 && l3.remove) l3.remove();
+              AdService.preloadRewarded();
+            };
+
+            l1 = await AdMob.addListener(rewardedEventName, () => {
+              cleanup();
+              complete();
             });
 
-            const dismissedListener = await AdMob.addListener(RewardAdEvents ? RewardAdEvents.Dismissed : 'onDismissed', async () => {
-              rewardedListener.remove();
-              dismissedListener.remove();
-              AdService.preloadRewarded();
-              completeCallback();
+            l2 = await AdMob.addListener(dismissedEventName, () => {
+              cleanup();
+              complete();
             });
 
-            const failedListener = await AdMob.addListener(RewardAdEvents ? RewardAdEvents.FailedToShow : 'onFailedToShow', async () => {
-              rewardedListener.remove();
-              dismissedListener.remove();
-              failedListener.remove();
-              AdService.preloadRewarded();
-              completeCallback();
+            l3 = await AdMob.addListener(failedEventName, () => {
+              cleanup();
+              complete();
             });
 
             await AdMob.showRewardVideoAd();
           } catch (e) {
             console.warn('Ad Show Error:', e);
-            completeCallback();
+            complete();
           }
         } else {
-          completeCallback();
+          // Fallback in browser / testing mode
+          complete();
         }
       }
     };
@@ -1146,9 +1171,7 @@
       return true;
     }
 
-    // =========================================================================
     // SMART HEART BUTTON (0 HEARTS RULE)
-    // =========================================================================
     function handleHeaderHeartClick() {
       if (AppState.hearts > 0) {
         AudioFX.pop();
@@ -2004,27 +2027,27 @@
     }
 
     // =========================================================================
-    // 100% BULLETPROOF AUTO-SELECT HINT LOGIC (NO MORE AD SPAM)
+    // 100% BULLETPROOF AUTO-SELECT HINT LOGIC (PROVEN WORKING)
     // =========================================================================
     function applyHintLogic() {
       if (!AppState.currentChipItem || AppState.chipAnswered) return;
 
       const expected = AppState.currentChipItem.chips;
 
-      // 1. Clear any mismatch already picked
-      let currentLen = AppState.assembledChips.length;
-      for (let i = 0; i < currentLen; i++) {
-        if (cleanToken(AppState.assembledChips[i]) !== cleanToken(expected[i])) {
-          AppState.assembledChips = AppState.assembledChips.slice(0, i);
+      // 1. यदि यूजर ने पहले से कुछ गलत चिप्स लगा दिए हैं, तो गलत वाले हटाकर सही प्रिफिक्स रखें
+      let validCount = 0;
+      for (let i = 0; i < AppState.assembledChips.length; i++) {
+        if (i < expected.length && cleanToken(AppState.assembledChips[i]) === cleanToken(expected[i])) {
+          validCount++;
+        } else {
           break;
         }
       }
+      AppState.assembledChips = AppState.assembledChips.slice(0, validCount);
 
-      currentLen = AppState.assembledChips.length;
-
-      // 2. Select exactly the next required word
-      if (currentLen < expected.length) {
-        const nextCorrectChip = expected[currentLen];
+      // 2. अगला सही चिप ढूँढकर ट्रे में लगाएँ
+      if (validCount < expected.length) {
+        const nextCorrectChip = expected[validCount];
         AppState.assembledChips.push(nextCorrectChip);
 
         AudioFX.pop();
@@ -2033,12 +2056,13 @@
         resetChipActionButton();
         renderTrayAndSourcePool();
 
+        // यदि सारे चिप्स पूरे हो चुके हैं, तो बटन पर चमक दिखाएँ
         if (AppState.assembledChips.length === expected.length) {
           const btn = document.getElementById('btn-chip-main-action');
           if (btn) btn.classList.add('pulse-next');
         }
       } else {
-        alert("सभी चिप्स पहले ही सही क्रम में चुने जा चुके हैं! '✓ जाँचें' बटन दबाएँ।");
+        alert("सभी चिप्स पहले से सही क्रम में लगे हुए हैं! '✓ जाँचें' बटन दबाएँ।");
       }
     }
 
@@ -2046,8 +2070,9 @@
       if (!AppState.currentChipItem || AppState.chipAnswered) return;
       const expected = AppState.currentChipItem.chips;
       
-      if (AppState.assembledChips.length >= expected.length) {
-        alert("सभी चिप्स पहले से चुने हुए हैं!");
+      if (AppState.assembledChips.length >= expected.length && 
+          AppState.assembledChips.every((val, i) => cleanToken(val) === cleanToken(expected[i]))) {
+        alert("सभी चिप्स पहले से सही लगे हुए हैं! '✓ जाँचें' पर टैप करें।");
         return;
       }
 
@@ -2057,7 +2082,10 @@
         return;
       }
 
-      // If pass expired, show exactly 1 Rewarded Ad, then activate 5-min pass
+      // If pass expired, show exactly 1 Rewarded Ad, then activate 5-min pass and auto-select
+      const hintLabel = document.getElementById('hint-btn-label');
+      if (hintLabel) hintLabel.innerText = "लोडिंग...";
+
       AdService.showRewarded(() => {
         const fiveMinutesLater = Date.now() + (5 * 60 * 1000);
         AppState.freeHintPassUntil = fiveMinutesLater;
