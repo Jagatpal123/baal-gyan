@@ -34,6 +34,8 @@
       -webkit-user-select: none;
       touch-action: manipulation;
       overscroll-behavior: none;
+      height: 100%;
+      overflow-x: hidden;
     }
 
     .notch-safe-header {
@@ -108,7 +110,7 @@
     .card-3d {
       box-shadow: 0 5px 0 rgba(0,0,0,0.08);
       border-radius: 1.5rem;
-      transition: transform 0.08s ease;
+      transition: transform 0.08s ease, border-color 0.15s ease, background-color 0.15s ease;
       will-change: transform;
     }
     .card-3d:active {
@@ -176,7 +178,15 @@
       line-height: 1.1;
     }
 
-    /* Zero-Crash Lightweight CSS Confetti */
+    /* Universal Audio-Visual Highlight Effect */
+    .speaking-highlight {
+      background-color: #fef08a !important;
+      border-color: #f59e0b !important;
+      transform: scale(1.08) !important;
+      box-shadow: 0 0 16px rgba(245, 158, 11, 0.65) !important;
+      z-index: 10;
+    }
+
     .confetti-particle {
       position: fixed;
       width: 10px;
@@ -196,23 +206,15 @@
         transform: translate(var(--tx, 0px), var(--ty, 180px)) rotate(var(--rot, 360deg)) scale(0.6);
       }
     }
-
-    /* Audio Active Highlight for Math Grid */
-    .math-cell-speaking {
-      background-color: #fef08a !important;
-      border-color: #ea580c !important;
-      transform: scale(1.06) !important;
-      box-shadow: 0 0 12px rgba(234, 88, 12, 0.5) !important;
-    }
   </style>
 </head>
 <body class="bg-amber-50 text-slate-800 min-h-screen flex flex-col pb-44 select-none">
 
-  <!-- ================= WELCOME SCREEN OVERLAY (100% NO-SCROLL VIEWPORT LOCKED) ================= -->
-  <div id="welcome-screen" class="fixed inset-0 z-50 bg-gradient-to-b from-sky-400 via-teal-400 to-emerald-500 flex flex-col justify-between p-4 transition-all duration-300 h-[100dvh] overflow-hidden" style="padding-top: calc(var(--safe-top) + 8px); padding-bottom: calc(var(--safe-bottom) + 12px);">
+  <!-- ================= WELCOME SCREEN OVERLAY ================= -->
+  <div id="welcome-screen" class="fixed inset-0 z-50 bg-gradient-to-b from-sky-400 via-teal-400 to-emerald-500 flex flex-col justify-between p-4 transition-all duration-300 w-full h-[100dvh] overflow-hidden select-none" style="touch-action: none; padding-top: calc(var(--safe-top) + 8px); padding-bottom: calc(var(--safe-bottom) + 12px);">
     <div class="w-full flex items-center justify-between text-white text-xs font-black">
       <span class="bg-white/20 backdrop-blur-md px-3 py-1 rounded-full border border-white/30">✨ भारत का अपना किड्स ऐप</span>
-      <span class="bg-white/20 backdrop-blur-md px-3 py-1 rounded-full border border-white/30">v2.2 Ultra</span>
+      <span class="bg-white/20 backdrop-blur-md px-3 py-1 rounded-full border border-white/30">v2.4 Ultra</span>
     </div>
 
     <div class="flex flex-col items-center text-center my-auto w-full max-w-xs mx-auto">
@@ -269,7 +271,7 @@
     </div>
   </header>
 
-  <!-- ================= PARENTAL GATE MODAL (FAMILIES SAFE) ================= -->
+  <!-- ================= PARENTAL GATE MODAL ================= -->
   <div id="parental-gate-modal" class="fixed inset-0 z-50 bg-black/65 backdrop-blur-sm hidden flex items-center justify-center p-4">
     <div class="bg-white border-4 border-amber-400 rounded-3xl p-5 max-w-xs w-full shadow-2xl flex flex-col items-center text-center gap-3">
       <div class="w-14 h-14 rounded-2xl bg-amber-100 text-amber-600 flex items-center justify-center text-3xl font-black shadow-inner">
@@ -277,7 +279,7 @@
       </div>
       <div>
         <h3 class="text-lg font-black text-slate-800">अभिभावक गेट (Parent Gate)</h3>
-        <p class="text-xs font-bold text-slate-500 mt-0.5">आगे बढ़ने के लिए इस सरल सवाल का उत्तर दें:</p>
+        <p class="text-xs font-bold text-slate-500 mt-0.5">आगे बढ़ने के लिए इस सवाल का उत्तर दें:</p>
       </div>
 
       <div class="bg-amber-50 border-2 border-amber-300 rounded-2xl py-2 px-4 text-2xl font-black text-amber-900 tracking-wider" id="parental-question-text">
@@ -352,7 +354,7 @@
   <!-- ================= MAIN VIEWPORT ================= -->
   <main class="flex-1 w-full max-w-lg mx-auto p-3 flex flex-col">
 
-    <!-- VIEW 0: HOME CATEGORY HUB (VIBRANT PASTEL CARDS) -->
+    <!-- VIEW 0: HOME CATEGORY HUB -->
     <section id="view-home" class="tab-view flex flex-col gap-3">
       <div class="bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500 text-white rounded-3xl p-4 shadow-md flex items-center justify-between">
         <div>
@@ -364,7 +366,6 @@
       </div>
 
       <div class="grid grid-cols-1 gap-2.5 pt-1">
-        <!-- 1. वर्णमाला (Pastel Green) -->
         <div onclick="navigateCategory('varnamala')" class="card-3d p-3.5 flex items-center justify-between cursor-pointer bg-emerald-50/90 border-3 border-emerald-300 hover:border-emerald-500">
           <div class="flex items-center gap-3.5">
             <div class="w-13 h-13 rounded-2xl bg-emerald-200 text-emerald-800 flex items-center justify-center text-3xl font-black p-2 shadow-inner">🔤</div>
@@ -376,7 +377,6 @@
           <span class="text-emerald-500 font-black text-2xl">➔</span>
         </div>
 
-        <!-- 2. मात्राएँ (Pastel Purple) -->
         <div onclick="navigateCategory('matra')" class="card-3d p-3.5 flex items-center justify-between cursor-pointer bg-purple-50/90 border-3 border-purple-300 hover:border-purple-500">
           <div class="flex items-center gap-3.5">
             <div class="w-13 h-13 rounded-2xl bg-purple-200 text-purple-800 flex items-center justify-center text-2xl font-black p-2 shadow-inner">ािी</div>
@@ -388,7 +388,6 @@
           <span class="text-purple-500 font-black text-2xl">➔</span>
         </div>
 
-        <!-- 3. गणित शाला (Pastel Orange) -->
         <div onclick="navigateCategory('mathlab')" class="card-3d p-3.5 flex items-center justify-between cursor-pointer bg-orange-50/90 border-3 border-orange-300 hover:border-orange-500">
           <div class="flex items-center gap-3.5">
             <div class="w-13 h-13 rounded-2xl bg-orange-200 text-orange-800 flex items-center justify-center text-3xl font-black p-2 shadow-inner">🔢</div>
@@ -403,7 +402,6 @@
           <span class="text-orange-500 font-black text-2xl">➔</span>
         </div>
 
-        <!-- 4. चिप्स वाक्य व शब्द (Pastel Amber) -->
         <div onclick="navigateCategory('chips')" class="card-3d p-3.5 flex items-center justify-between cursor-pointer bg-amber-100/80 border-3 border-amber-300 hover:border-amber-500">
           <div class="flex items-center gap-3.5">
             <div class="w-13 h-13 rounded-2xl bg-amber-200 text-amber-800 flex items-center justify-center text-3xl font-black p-2 shadow-inner">🧩</div>
@@ -418,7 +416,6 @@
           <span class="text-amber-600 font-black text-2xl">➔</span>
         </div>
 
-        <!-- 5. जोड़े मिलाओ (Pastel Blue) -->
         <div onclick="navigateCategory('pairs')" class="card-3d p-3.5 flex items-center justify-between cursor-pointer bg-blue-50/90 border-3 border-blue-300 hover:border-blue-500">
           <div class="flex items-center gap-3.5">
             <div class="w-13 h-13 rounded-2xl bg-blue-200 text-blue-800 flex items-center justify-center text-3xl font-black p-2 shadow-inner">🃏</div>
@@ -430,7 +427,6 @@
           <span class="text-blue-500 font-black text-2xl">➔</span>
         </div>
 
-        <!-- 6. चुनो और सुनो (Pastel Sky) -->
         <div onclick="navigateCategory('listen')" class="card-3d p-3.5 flex items-center justify-between cursor-pointer bg-sky-50/90 border-3 border-sky-300 hover:border-sky-500">
           <div class="flex items-center gap-3.5">
             <div class="w-13 h-13 rounded-2xl bg-sky-200 text-sky-800 flex items-center justify-center text-3xl font-black p-2 shadow-inner">👂</div>
@@ -442,7 +438,6 @@
           <span class="text-sky-500 font-black text-2xl">➔</span>
         </div>
 
-        <!-- 7. स्मार्ट ट्रांसलेटर (Pastel Teal) -->
         <div onclick="navigateCategory('translate')" class="card-3d p-3.5 flex items-center justify-between cursor-pointer bg-teal-50/90 border-3 border-teal-300 hover:border-teal-500">
           <div class="flex items-center gap-3.5">
             <div class="w-13 h-13 rounded-2xl bg-teal-200 text-teal-800 flex items-center justify-center text-3xl font-black p-2 shadow-inner">🌐</div>
@@ -454,7 +449,6 @@
           <span class="text-teal-500 font-black text-2xl">➔</span>
         </div>
 
-        <!-- 8. उपलब्धि व प्रोग्रेस (Pastel Yellow) -->
         <div onclick="navigateCategory('achieve')" class="card-3d p-3.5 flex items-center justify-between cursor-pointer bg-yellow-50/90 border-3 border-yellow-300 hover:border-yellow-500">
           <div class="flex items-center gap-3.5">
             <div class="w-13 h-13 rounded-2xl bg-yellow-200 text-yellow-800 flex items-center justify-center text-3xl font-black p-2 shadow-inner">🏆</div>
@@ -597,7 +591,7 @@
       </div>
     </section>
 
-    <!-- VIEW 3: चिप्स वाक्य व शब्द (LARGER, TOY-LIKE CHIPS & TEXT) -->
+    <!-- VIEW 3: चिप्स वाक्य व शब्द (WITH SHABASH & OH NO VOICE) -->
     <section id="view-chips" class="tab-view hidden flex flex-col gap-3.5 relative pb-4">
       <div class="flex items-center justify-between">
         <button onclick="goToHomeScreen()" class="btn-3d bg-white border-2 border-slate-300 text-slate-700 px-3.5 py-1.5 rounded-xl text-xs font-black flex items-center gap-1 shadow-sm">
@@ -645,24 +639,20 @@
           </button>
         </div>
 
-        <!-- Target Tray (Larger Container) -->
         <div class="min-h-[76px] bg-slate-50 border-3 border-dashed border-slate-300 rounded-2xl p-3 flex flex-wrap gap-2.5 items-center justify-center" id="chip-target-tray">
           <span class="text-sm font-bold text-slate-400 mx-auto select-none pointer-events-none" id="tray-placeholder">नीचे दिए गए चिप्स को टैप करें...</span>
         </div>
 
-        <!-- Available Chips Pool (Chubby, Touchable Chips) -->
         <div class="pt-2 border-t border-slate-100">
           <span class="text-xs font-black text-slate-400 block mb-2">उपलब्ध चिप्स (टैप करें):</span>
           <div id="chip-source-pool" class="flex flex-wrap gap-2.5 justify-center"></div>
         </div>
 
-        <!-- Action Controls with Big, Bold Text -->
         <div class="flex gap-2.5 pt-2">
           <button onclick="clearCurrentTray()" class="btn-3d bg-rose-100 border-2 border-rose-300 text-rose-700 px-3 py-3 rounded-2xl text-sm sm:text-base font-black flex-1">
             🗑 रीसेट
           </button>
           
-          <!-- HINT BUTTON -->
           <button onclick="giveChipHint()" id="btn-hint-main" class="btn-3d btn-yellow px-2 py-3 rounded-2xl text-sm sm:text-base font-black flex-1 flex items-center justify-center gap-1.5">
             <span class="ad-policy-badge" id="hint-ad-badge">AD</span>
             <span id="hint-btn-label">💡 संकेत</span>
@@ -675,7 +665,7 @@
       </div>
     </section>
 
-    <!-- VIEW 4: जोड़े मिलाओ -->
+    <!-- VIEW 4: जोड़े मिलाओ (WITH VOICE FEEDBACK) -->
     <section id="view-pairs" class="tab-view hidden flex flex-col gap-3">
       <div class="flex items-center justify-between">
         <button onclick="goToHomeScreen()" class="btn-3d bg-white border-2 border-slate-300 text-slate-700 px-3 py-1.5 rounded-xl text-xs font-black flex items-center gap-1 shadow-sm">
@@ -709,7 +699,7 @@
       <div id="pair-grid" class="grid grid-cols-3 sm:grid-cols-4 gap-2.5 pb-4"></div>
     </section>
 
-    <!-- VIEW 5: सुनो और चुनो -->
+    <!-- VIEW 5: सुनो और चुनो (WITH VOICE FEEDBACK) -->
     <section id="view-listen" class="tab-view hidden flex flex-col gap-3 relative pb-28">
       <div class="flex items-center justify-between">
         <button onclick="goToHomeScreen()" class="btn-3d bg-white border-2 border-slate-300 text-slate-700 px-3 py-1.5 rounded-xl text-xs font-black flex items-center gap-1 shadow-sm">
@@ -727,7 +717,7 @@
 
       <div class="bg-gradient-to-b from-sky-400 to-blue-500 text-white rounded-3xl p-6 text-center shadow-lg flex flex-col items-center justify-center gap-3">
         <span class="text-xs font-black uppercase tracking-wider text-sky-100">ध्यान से सुनो और सही उत्तर चुनो</span>
-        <button onclick="replayListenAudio()" class="w-24 h-24 rounded-full bg-white text-blue-600 shadow-xl border-4 border-sky-200 flex items-center justify-center text-4xl active:scale-90 transition-transform">
+        <button onclick="replayListenAudio()" id="btn-listen-speaker-box" class="w-24 h-24 rounded-full bg-white text-blue-600 shadow-xl border-4 border-sky-200 flex items-center justify-center text-4xl active:scale-90 transition-transform">
           🔊
         </button>
         <p class="text-xs font-bold text-sky-100">आवाज़ दोबारा सुनने के लिए स्पीकर दबाएँ</p>
@@ -879,7 +869,7 @@
     <div id="banner-ad-box" style="height: 50px;"></div>
   </div>
 
-  <!-- ================= BOTTOM NAVIGATION BAR (BIGGER BOLD TEXT & TOUCH TARGETS) ================= -->
+  <!-- ================= BOTTOM NAVIGATION BAR ================= -->
   <nav class="fixed bottom-0 left-0 right-0 z-40 bg-white border-t-4 border-amber-200 px-3 py-1.5 shadow-2xl max-w-lg mx-auto" style="padding-bottom: calc(var(--safe-bottom) + 6px);">
     <div class="grid grid-cols-4 gap-1 text-center">
       <button onclick="goToHomeScreen()" id="nav-btn-home" class="nav-tab-btn flex flex-col items-center py-1 text-emerald-600">
@@ -909,7 +899,8 @@
     const AdConfig = {
       bannerId: 'ca-app-pub-6302105448775587/9146645040',
       rewardedId: 'ca-app-pub-6302105448775587/2277984366',
-      bannerVisible: false
+      bannerVisible: false,
+      isRewardedLoaded: false
     };
 
     let isAdInProgress = false;
@@ -963,7 +954,9 @@
               tagForChildDirectedTreatment: true,
               maxAdContentRating: 'G'
             });
+            AdConfig.isRewardedLoaded = true;
           } catch (e) {
+            AdConfig.isRewardedLoaded = false;
             console.warn('Rewarded Preload Error:', e);
           }
         }
@@ -990,11 +983,13 @@
         if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.AdMob) {
           const { AdMob, RewardAdEvents } = window.Capacitor.Plugins;
           try {
-            await this.preloadRewarded();
+            if (!AdConfig.isRewardedLoaded) {
+              await this.preloadRewarded();
+            }
 
             const safetyTimeout = setTimeout(() => {
               complete();
-            }, 8000);
+            }, 7000);
 
             const rewardedEventName = (RewardAdEvents && RewardAdEvents.Rewarded) ? RewardAdEvents.Rewarded : 'onRewarded';
             const dismissedEventName = (RewardAdEvents && RewardAdEvents.Dismissed) ? RewardAdEvents.Dismissed : 'onDismissed';
@@ -1007,6 +1002,7 @@
               if (l1 && l1.remove) l1.remove();
               if (l2 && l2.remove) l2.remove();
               if (l3 && l3.remove) l3.remove();
+              AdConfig.isRewardedLoaded = false;
               AdService.preloadRewarded();
             };
 
@@ -1027,7 +1023,7 @@
 
             await AdMob.showRewardVideoAd();
           } catch (e) {
-            console.warn('Ad Show Error:', e);
+            console.warn('Ad Show Error, executing fallback:', e);
             complete();
           }
         } else {
@@ -1043,6 +1039,15 @@
       if ('vibrate' in navigator) {
         try { navigator.vibrate(duration); } catch(e) {}
       }
+    }
+
+    function highlightSpeakingElement(element, duration = 1200) {
+      if (!element) return;
+      document.querySelectorAll('.speaking-highlight').forEach(el => el.classList.remove('speaking-highlight'));
+      element.classList.add('speaking-highlight');
+      setTimeout(() => {
+        if (element) element.classList.remove('speaking-highlight');
+      }, duration);
     }
 
     function speakText(text, lang = 'hi-IN') {
@@ -1104,6 +1109,7 @@
 
         setTimeout(() => {
           AdService.showBanner();
+          AdService.preloadRewarded();
         }, 500);
       }
     }
@@ -1256,9 +1262,6 @@
       document.getElementById('hearts-modal').classList.add('hidden');
     }
 
-    // =========================================================================
-    // PARENTAL GATE IMPLEMENTATION (SECURE & COMPLIANT)
-    // =========================================================================
     function openParentalGate(onSuccessCallback) {
       AppState.pendingAdCallback = onSuccessCallback;
       const n1 = Math.floor(Math.random() * 5) + 2;
@@ -1693,7 +1696,7 @@
       if (catName === 'achieve') updateHeaderStatsDisplay();
     }
 
-    // MATH LAB WITH AUDIO-VISUAL SYNC
+    // MATH LAB
     const gintiRanges = [
       { label: '1 से 20', start: 1, end: 20 },
       { label: '21 से 40', start: 21, end: 40 },
@@ -1780,19 +1783,11 @@
         `;
         card.onclick = () => {
           AudioFX.pop();
-          highlightSpeakingCell(card);
+          highlightSpeakingElement(card);
           speakText(`${item.num}, ${item.hi}`, 'hi-IN');
         };
         grid.appendChild(card);
       });
-    }
-
-    function highlightSpeakingCell(element) {
-      document.querySelectorAll('.math-cell-speaking').forEach(el => el.classList.remove('math-cell-speaking'));
-      if (element) {
-        element.classList.add('math-cell-speaking');
-        setTimeout(() => element.classList.remove('math-cell-speaking'), 1100);
-      }
     }
 
     function renderPahadaView() {
@@ -1836,7 +1831,7 @@
         `;
         card.onclick = () => {
           AudioFX.pop();
-          highlightSpeakingCell(card);
+          highlightSpeakingElement(card);
           speakText(phrase, 'hi-IN');
         };
         grid.appendChild(card);
@@ -1867,6 +1862,7 @@
         `;
         card.onclick = () => {
           AudioFX.pop();
+          highlightSpeakingElement(card);
           speakText(`${item.place}, मान है ${item.value}. ${item.speech}`, 'hi-IN');
         };
         container.appendChild(card);
@@ -1882,7 +1878,7 @@
           if (idx >= items.length) return;
           const target = items[idx];
           const cell = document.getElementById(`ginti-cell-${target.num}`);
-          highlightSpeakingCell(cell);
+          highlightSpeakingElement(cell, 1000);
           speakText(`${target.num}, ${target.hi}`, 'hi-IN');
           idx++;
           setTimeout(speakNextGinti, 1100);
@@ -1896,7 +1892,7 @@
           if (step > 10) return;
           const phrase = `${num} ${hindiMultipliers[step - 1]} ${num * step}`;
           const cell = document.getElementById(`pahada-cell-${step}`);
-          highlightSpeakingCell(cell);
+          highlightSpeakingElement(cell, 1100);
           speakText(phrase, 'hi-IN');
           step++;
           setTimeout(speakNextStep, 1300);
@@ -1936,9 +1932,10 @@
         document.getElementById('alpha-banner-icon').innerText = "🔤";
       }
 
-      items.forEach(item => {
+      items.forEach((item, index) => {
         const card = document.createElement('div');
-        card.className = "card-3d p-2 flex flex-col items-center justify-center text-center cursor-pointer bg-white hover:border-emerald-400";
+        card.id = `alpha-card-${index}`;
+        card.className = "card-3d p-2 flex flex-col items-center justify-center text-center cursor-pointer bg-white border-2 border-emerald-100 hover:border-emerald-400 transition-all";
         if (isEnglish) {
           card.innerHTML = `
             <span class="text-2xl">${item.icon}</span>
@@ -1946,14 +1943,22 @@
             <span class="text-xs font-extrabold text-emerald-600">${item.word}</span>
             <span class="text-[10px] font-bold text-slate-400">(${item.phonics})</span>
           `;
-          card.onclick = () => { AudioFX.pop(); speakText(`${item.char} for ${item.word}`, 'en-US'); };
+          card.onclick = () => {
+            AudioFX.pop();
+            highlightSpeakingElement(card);
+            speakText(`${item.char} for ${item.word}`, 'en-US');
+          };
         } else {
           card.innerHTML = `
             <span class="text-2xl">${item.icon}</span>
             <span class="text-2xl font-black text-slate-800 mt-0.5">${item.char}</span>
             <span class="text-xs font-extrabold text-emerald-600 truncate w-full">${item.word}</span>
           `;
-          card.onclick = () => { AudioFX.pop(); speakText(`${item.char} से ${item.word}`, 'hi-IN'); };
+          card.onclick = () => {
+            AudioFX.pop();
+            highlightSpeakingElement(card);
+            speakText(`${item.char} से ${item.word}`, 'hi-IN');
+          };
         }
         grid.appendChild(card);
       });
@@ -1966,6 +1971,8 @@
       function speakNext() {
         if (idx >= items.length) return;
         const itm = items[idx];
+        const card = document.getElementById(`alpha-card-${idx}`);
+        highlightSpeakingElement(card, 1200);
         const phrase = lang === 'en-US' ? `${itm.char} for ${itm.word}` : `${itm.char} से ${itm.word}`;
         speakText(phrase, lang);
         idx++;
@@ -1998,12 +2005,17 @@
       const grid = document.getElementById('barakhadi-cells-grid');
       grid.innerHTML = '';
       const offsets = ['', 'ा', 'ि', 'ी', 'ु', 'ू', 'ृ', 'े', 'ै', 'ो', 'ौ', 'ं', 'ः'];
-      offsets.forEach(m => {
+      offsets.forEach((m, idx) => {
         const combined = currentBarakhadiRoot + m;
         const card = document.createElement('div');
-        card.className = "card-3d p-2 text-center bg-white border-2 border-purple-100 hover:border-purple-400 cursor-pointer";
+        card.id = `barakhadi-cell-${idx}`;
+        card.className = "card-3d p-2 text-center bg-white border-2 border-purple-100 hover:border-purple-400 cursor-pointer transition-all";
         card.innerHTML = `<div class="text-xl font-black text-purple-900">${combined}</div>`;
-        card.onclick = () => { AudioFX.pop(); speakText(combined, 'hi-IN'); };
+        card.onclick = () => {
+          AudioFX.pop();
+          highlightSpeakingElement(card);
+          speakText(combined, 'hi-IN');
+        };
         grid.appendChild(card);
       });
 
@@ -2022,6 +2034,8 @@
       let i = 0;
       function step() {
         if (i >= matras.length) return;
+        const cell = document.getElementById(`barakhadi-cell-${i}`);
+        highlightSpeakingElement(cell, 800);
         speakText(currentBarakhadiRoot + matras[i], 'hi-IN');
         i++;
         setTimeout(step, 900);
@@ -2174,6 +2188,7 @@
           chipBtn.className = "btn-3d bg-white border-3 border-amber-300 text-slate-900 px-4 py-2 rounded-2xl text-base sm:text-lg font-black shadow-md hover:border-emerald-500 active:scale-95";
           chipBtn.onclick = () => {
             AudioFX.pop();
+            highlightSpeakingElement(chipBtn, 600);
             AppState.assembledChips.push(chipVal);
             speakText(chipVal, AppState.currentChipItem.lang === 'en' ? 'en-US' : 'hi-IN');
             resetChipActionButton();
@@ -2270,6 +2285,9 @@
       return (token || '').replace(/[.,?!।]/g, '').trim().toLowerCase();
     }
 
+    // =========================================================================
+    // CHIP MAIN BUTTON CLICK (ACCURACY FEEDBACK VOICE)
+    // =========================================================================
     function handleChipMainButtonClick() {
       const btn = document.getElementById('btn-chip-main-action');
 
@@ -2305,6 +2323,10 @@
       if (isMatch) {
         AppState.chipAnswered = true;
         AudioFX.success();
+        
+        // 🔊 सही होने पर शाबाश की आवाज़:
+        speakText('शाबाश! बहुत अच्छे!', 'hi-IN');
+
         triggerConfetti();
         showRewardToast();
 
@@ -2326,6 +2348,9 @@
         triggerHaptic(90);
         AudioFX.error();
         deductHeart();
+
+        // 🔊 गलत होने पर ओह नो की आवाज़:
+        speakText('ओह नो! फिर से कोशिश करो!', 'hi-IN');
 
         btn.innerText = "❌ गलत! पुनः प्रयास";
         btn.className = "btn-3d btn-rose px-5 py-3 rounded-2xl text-sm sm:text-base font-black flex-[2] animate-shake";
@@ -2396,16 +2421,23 @@
       });
 
       const shuffledCards = shuffleArray(flatCards);
-      shuffledCards.forEach((cardData) => {
+      shuffledCards.forEach((cardData, idx) => {
         const cardEl = document.createElement('div');
-        cardEl.className = "card-3d card-pair p-3 text-center cursor-pointer min-h-[75px] flex items-center justify-center font-black text-sm bg-white hover:border-indigo-400";
+        cardEl.id = `pair-card-${idx}`;
+        cardEl.className = "card-3d card-pair p-3 text-center cursor-pointer min-h-[75px] flex items-center justify-center font-black text-sm bg-white hover:border-indigo-400 transition-all";
         cardEl.dataset.pairId = cardData.pairId;
         cardEl.innerText = cardData.payload.text;
-        cardEl.onclick = () => handlePairCardTap(cardEl, cardData);
+        cardEl.onclick = () => {
+          highlightSpeakingElement(cardEl, 800);
+          handlePairCardTap(cardEl, cardData);
+        };
         grid.appendChild(cardEl);
       });
     }
 
+    // =========================================================================
+    // PAIR CARDS TAP LOGIC (WITH SHABASH & OH NO FEEDBACK)
+    // =========================================================================
     function handlePairCardTap(cardEl, cardData) {
       if (cardEl.classList.contains('matched') || cardEl.classList.contains('selected')) return;
 
@@ -2420,6 +2452,10 @@
         if (c1.data.pairId === c2.data.pairId) {
           setTimeout(() => {
             AudioFX.success();
+            
+            // 🔊 सही जोड़ा मिलने पर शाबाश:
+            speakText('शाबाश!', 'hi-IN');
+
             c1.el.classList.add('matched');
             c2.el.classList.add('matched');
             c1.el.classList.remove('selected');
@@ -2433,6 +2469,7 @@
               AudioFX.winFanfare();
               triggerConfetti();
               showRewardToast();
+              speakText('शानदार! पूरा बोर्ड हल हो गया!', 'hi-IN');
               AppState.stars += 10;
               AppState.gems += 5;
               saveStats();
@@ -2443,6 +2480,10 @@
             triggerHaptic(80);
             AudioFX.error();
             deductHeart();
+
+            // 🔊 गलत जोड़ा मिलने पर ओह नो:
+            speakText('ओह नो! गलत जोड़ा!', 'hi-IN');
+
             c1.el.classList.remove('selected');
             c2.el.classList.remove('selected');
             AppState.selectedPairCards = [];
@@ -2503,6 +2544,9 @@
       setTimeout(() => replayListenAudio(), 300);
     }
 
+    // =========================================================================
+    // AUDIO QUIZ CLICK LOGIC (WITH SHABASH & OH NO FEEDBACK)
+    // =========================================================================
     function handleListenOptionClick(clickedBtn, selectedOpt) {
       if (AppState.listenAnswered) return;
 
@@ -2517,7 +2561,12 @@
       if (selectedOpt.text === target.text) {
         AppState.listenAnswered = true;
         AudioFX.success();
+        
+        // 🔊 सही जवाब पर शाबाश:
+        speakText('शाबाश! बिल्कुल सही!', 'hi-IN');
+
         triggerConfetti();
+        showRewardToast();
 
         clickedBtn.style.borderColor = '#10b981';
         clickedBtn.style.backgroundColor = '#dcfce7';
@@ -2543,6 +2592,9 @@
         AudioFX.error();
         deductHeart();
 
+        // 🔊 गलत जवाब पर ओह नो:
+        speakText('ओह नो! गलत जवाब!', 'hi-IN');
+
         clickedBtn.classList.add('animate-shake');
         clickedBtn.style.borderColor = '#ef4444';
         clickedBtn.style.backgroundColor = '#fee2e2';
@@ -2550,8 +2602,7 @@
 
         document.querySelectorAll('#listen-options-grid button').forEach(b => {
           if (b.dataset.text === target.text) {
-            b.style.borderColor = '#10b981';
-            b.style.backgroundColor = '#dcfce7';
+            highlightSpeakingElement(b, 1500);
           }
         });
 
@@ -2572,6 +2623,8 @@
 
     function replayListenAudio() {
       if (AppState.activeListenQuestion) {
+        const speakerBox = document.getElementById('btn-listen-speaker-box');
+        highlightSpeakingElement(speakerBox, 1000);
         speakText(AppState.activeListenQuestion.target.speech, AppState.activeListenQuestion.lang);
       }
     }
@@ -2630,6 +2683,7 @@
       if (DataStore.dictionary[lower]) {
         const res = DataStore.dictionary[lower];
         resultBox.innerText = res;
+        highlightSpeakingElement(resultBox);
         speakText(res, AppState.translateDirection === 'en-to-hi' ? 'hi-IN' : 'en-US');
         return;
       }
@@ -2649,6 +2703,7 @@
       if (match) {
         const res = AppState.translateDirection === 'en-to-hi' ? match.hi : match.en;
         resultBox.innerText = res;
+        highlightSpeakingElement(resultBox);
         speakText(res, AppState.translateDirection === 'en-to-hi' ? 'hi-IN' : 'en-US');
         return;
       }
@@ -2666,6 +2721,7 @@
       const txt = document.getElementById('trans-result-box').innerText;
       if (txt && !txt.includes('दिखाई देगा')) {
         const lang = AppState.translateDirection === 'en-to-hi' ? 'hi-IN' : 'en-US';
+        highlightSpeakingElement(document.getElementById('trans-result-box'));
         speakText(txt, lang);
       }
     }
@@ -2772,6 +2828,13 @@
       document.getElementById('voice-assistant-modal').classList.add('hidden');
     }
 
+    const welcomeScreenEl = document.getElementById('welcome-screen');
+    if (welcomeScreenEl) {
+      welcomeScreenEl.addEventListener('touchmove', (e) => {
+        e.preventDefault();
+      }, { passive: false });
+    }
+
     window.addEventListener('DOMContentLoaded', () => {
       updateHeaderStatsDisplay();
       initChipQueues();
@@ -2780,7 +2843,7 @@
 
       setTimeout(() => {
         AdService.init();
-      }, 500);
+      }, 400);
     });
   </script>
 </body>
