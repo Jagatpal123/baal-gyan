@@ -6,8 +6,6 @@
   <title>बाल ज्ञान प्रो Ultra - Kids Master Hub</title>
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- Canvas Confetti -->
-  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
   <!-- Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com">
@@ -17,22 +15,25 @@
     :root {
       --safe-top: env(safe-area-inset-top, 24px);
       --safe-bottom: env(safe-area-inset-bottom, 16px);
-      /* Navigation Bar Height (approx 62px) + Safe Area */
       --nav-total-height: calc(62px + var(--safe-bottom));
-      /* Banner Height (50px) + Margin */
       --banner-bottom-offset: calc(var(--nav-total-height) + 2px);
     }
 
     * {
       box-sizing: border-box;
       -webkit-tap-highlight-color: transparent;
+      transform: translateZ(0); /* Hardware Acceleration Enabled */
+      backface-visibility: hidden;
+      -webkit-backface-visibility: hidden;
     }
+
     html, body {
       background-color: #fef3c7 !important;
       font-family: 'Baloo 2', 'Nunito', sans-serif;
       user-select: none;
       -webkit-user-select: none;
       touch-action: manipulation;
+      overscroll-behavior: none;
     }
 
     .notch-safe-header {
@@ -42,8 +43,9 @@
     /* 3D Tactile Buttons */
     .btn-3d {
       position: relative;
-      transition: transform 0.05s ease;
+      transition: transform 0.05s ease, box-shadow 0.05s ease;
       cursor: pointer;
+      will-change: transform;
     }
     .btn-3d:active {
       transform: translateY(3px);
@@ -106,9 +108,10 @@
     .card-3d {
       background: white;
       border: 3px solid #e5e7eb;
-      box-shadow: 0 5px 0 #d1d5db;
+      box-shadow: 0 4px 0 #d1d5db;
       border-radius: 1.25rem;
       transition: transform 0.08s ease;
+      will-change: transform;
     }
     .card-3d:active {
       transform: translateY(2px);
@@ -123,7 +126,7 @@
       opacity: 0.25;
       pointer-events: none;
       transform: scale(0.92);
-      transition: all 0.3s ease;
+      transition: all 0.2s ease;
     }
 
     .no-scrollbar::-webkit-scrollbar {
@@ -136,43 +139,32 @@
 
     @keyframes heartBeat {
       0%, 100% { transform: scale(1); }
-      50% { transform: scale(1.18); }
+      50% { transform: scale(1.15); }
     }
     .heart-pulse {
       animation: heartBeat 1.4s infinite ease-in-out;
+      will-change: transform;
     }
 
     @keyframes shakeCard {
       0%, 100% { transform: translateX(0); }
-      20%, 60% { transform: translateX(-6px); }
-      40%, 80% { transform: translateX(6px); }
+      25% { transform: translateX(-5px); }
+      75% { transform: translateX(5px); }
     }
     .animate-shake {
-      animation: shakeCard 0.4s ease-in-out;
+      animation: shakeCard 0.3s ease-in-out;
     }
 
-    @keyframes pulseGlow {
-      0%, 100% { transform: scale(1); box-shadow: 0 4px 0 #46a302; }
-      50% { transform: scale(1.02); box-shadow: 0 6px 16px rgba(88, 204, 2, 0.7); }
-    }
     .pulse-next {
-      animation: pulseGlow 0.9s infinite ease-in-out;
+      box-shadow: 0 0 12px rgba(88, 204, 2, 0.8) !important;
     }
 
     @keyframes floatLogo {
       0%, 100% { transform: translateY(0px); }
-      50% { transform: translateY(-8px); }
+      50% { transform: translateY(-6px); }
     }
     .animate-float {
       animation: floatLogo 2.5s infinite ease-in-out;
-    }
-
-    @keyframes fadeInModal {
-      from { opacity: 0; transform: scale(0.97); }
-      to { opacity: 1; transform: scale(1); }
-    }
-    .animate-fade-in {
-      animation: fadeInModal 0.25s ease-out forwards;
     }
 
     .ad-policy-badge {
@@ -185,6 +177,27 @@
       letter-spacing: 0.5px;
       line-height: 1;
     }
+
+    /* Zero-Crash Lightweight CSS Confetti */
+    .confetti-particle {
+      position: fixed;
+      width: 10px;
+      height: 10px;
+      z-index: 9999;
+      pointer-events: none;
+      border-radius: 2px;
+      animation: fallDown 1.2s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+    }
+    @keyframes fallDown {
+      0% {
+        opacity: 1;
+        transform: translate(0, 0) rotate(0deg) scale(1);
+      }
+      100% {
+        opacity: 0;
+        transform: translate(var(--tx, 0px), var(--ty, 180px)) rotate(var(--rot, 360deg)) scale(0.6);
+      }
+    }
   </style>
 </head>
 <body class="bg-amber-50 text-slate-800 min-h-screen flex flex-col pb-44 select-none">
@@ -196,7 +209,7 @@
       <span class="bg-white/20 backdrop-blur-md px-3 py-1 rounded-full border border-white/30">v2.1 Ultra</span>
     </div>
 
-    <div class="flex flex-col items-center text-center animate-fade-in my-auto w-full max-w-sm">
+    <div class="flex flex-col items-center text-center my-auto w-full max-w-sm">
       <div class="relative w-52 h-52 sm:w-64 sm:h-64 mb-4 animate-float flex items-center justify-center">
         <div class="absolute inset-0 bg-yellow-300/40 rounded-full blur-2xl"></div>
         <img src="logo.png" alt="बाल ज्ञान प्रो Ultra Logo" class="relative w-full h-full object-contain drop-shadow-2xl rounded-3xl border-4 border-white/80 shadow-2xl" onerror="this.src='https://cdn-icons-png.flaticon.com/512/3815/3815321.png'">
@@ -218,7 +231,7 @@
     </div>
   </div>
 
-  <!-- ================= TOP HEADER (NOTCH SAFE & FAMILIES COMPLIANT) ================= -->
+  <!-- ================= TOP HEADER ================= -->
   <header class="sticky top-0 z-30 bg-white border-b-4 border-amber-200 shadow-sm px-3 pb-2.5 notch-safe-header flex items-center justify-between">
     <div class="flex items-center gap-2 cursor-pointer" onclick="goToHomeScreen()">
       <img src="logo.png" alt="App Logo" class="w-10 h-10 rounded-xl object-contain border-2 border-amber-200 shadow-sm" onerror="this.src='https://cdn-icons-png.flaticon.com/512/3815/3815321.png'">
@@ -540,7 +553,7 @@
       </div>
     </section>
 
-    <!-- VIEW 3: चिप्स वाक्य व शब्द (100% FIXED AUTO-SELECT HINT) -->
+    <!-- VIEW 3: चिप्स वाक्य व शब्द -->
     <section id="view-chips" class="tab-view hidden flex flex-col gap-3 relative pb-4">
       <div class="flex items-center justify-between">
         <button onclick="goToHomeScreen()" class="btn-3d bg-white border-2 border-slate-300 text-slate-700 px-3 py-1.5 rounded-xl text-xs font-black flex items-center gap-1 shadow-sm">
@@ -605,7 +618,7 @@
             🗑 रीसेट
           </button>
           
-          <!-- HINT BUTTON (AUTO SELECT & REWARDED AD) -->
+          <!-- HINT BUTTON -->
           <button onclick="giveChipHint()" id="btn-hint-main" class="btn-3d btn-yellow px-2 py-2.5 rounded-2xl text-xs font-black flex-1 flex items-center justify-center gap-1">
             <span class="ad-policy-badge" id="hint-ad-badge">AD</span>
             <span id="hint-btn-label">💡 संकेत</span>
@@ -679,7 +692,7 @@
       <div id="listen-options-grid" class="grid grid-cols-2 gap-3 pt-1"></div>
 
       <!-- CONFIRMATION BANNER IN CHUNO-SUNO -->
-      <div id="listen-confirm-banner" class="hidden fixed bottom-28 left-0 right-0 max-w-lg mx-auto p-3 z-50 animate-slide-up">
+      <div id="listen-confirm-banner" class="hidden fixed bottom-28 left-0 right-0 max-w-lg mx-auto p-3 z-50">
         <div id="listen-banner-card" class="rounded-2xl border-4 border-emerald-400 p-3.5 shadow-2xl flex items-center justify-between bg-emerald-50">
           <div class="flex items-center gap-3">
             <div id="listen-banner-icon" class="w-12 h-12 rounded-2xl bg-emerald-500 text-white flex items-center justify-center text-2xl font-black shadow-md flex-shrink-0">
@@ -816,7 +829,7 @@
 
   </main>
 
-  <!-- ================= FIXED BOTTOM AD CONTAINER (RAISED SAFELY ABOVE NAV BAR) ================= -->
+  <!-- ================= FIXED BOTTOM AD CONTAINER ================= -->
   <div id="families-ad-wrapper" class="fixed left-0 right-0 z-30 bg-amber-100/95 border-t border-b border-amber-300 text-center py-0.5 max-w-lg mx-auto pointer-events-none" style="bottom: var(--banner-bottom-offset); min-height: 54px;">
     <span class="text-[9px] font-black text-slate-400 uppercase tracking-widest block leading-tight">ADVERTISEMENT</span>
     <div id="banner-ad-box" style="height: 50px;"></div>
@@ -880,7 +893,6 @@
         if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.AdMob) {
           try {
             const { AdMob, BannerAdPosition, BannerAdSize } = window.Capacitor.Plugins;
-            // Margin 78px completely prevents overlap over bottom navigation bar
             await AdMob.showBanner({
               adId: AdConfig.bannerId,
               adSize: BannerAdSize ? BannerAdSize.BANNER : 'BANNER',
@@ -936,10 +948,9 @@
           try {
             await this.preloadRewarded();
 
-            // Set up fallback timeout so game never freezes if ad fails
             const safetyTimeout = setTimeout(() => {
               complete();
-            }, 10000);
+            }, 8000);
 
             const rewardedEventName = (RewardAdEvents && RewardAdEvents.Rewarded) ? RewardAdEvents.Rewarded : 'onRewarded';
             const dismissedEventName = (RewardAdEvents && RewardAdEvents.Dismissed) ? RewardAdEvents.Dismissed : 'onDismissed';
@@ -976,7 +987,6 @@
             complete();
           }
         } else {
-          // Fallback in browser / testing mode
           complete();
         }
       }
@@ -1056,7 +1066,6 @@
       gems: parseInt(localStorage.getItem('bg_gems') || '120'),
       isMuted: localStorage.getItem('bg_muted') === 'true',
 
-      // 5-MIN FREE HINT PASS TIMESTAMP
       freeHintPassUntil: parseInt(localStorage.getItem('bg_free_hint_until') || '0'),
 
       activeCategory: 'home',
@@ -1110,11 +1119,20 @@
     }
 
     function updateHeaderStatsDisplay() {
-      document.getElementById('stat-hearts').innerText = AppState.hearts;
-      document.getElementById('modal-hearts-count').innerText = AppState.hearts;
-      document.getElementById('stat-streak').innerText = AppState.streak;
-      document.getElementById('stat-gems').innerText = AppState.gems;
-      document.getElementById('sound-btn').innerText = AppState.isMuted ? '🔇' : '🔊';
+      const hEl = document.getElementById('stat-hearts');
+      if (hEl && hEl.innerText !== String(AppState.hearts)) hEl.innerText = AppState.hearts;
+
+      const mhEl = document.getElementById('modal-hearts-count');
+      if (mhEl && mhEl.innerText !== String(AppState.hearts)) mhEl.innerText = AppState.hearts;
+
+      const sEl = document.getElementById('stat-streak');
+      if (sEl && sEl.innerText !== String(AppState.streak)) sEl.innerText = AppState.streak;
+
+      const gEl = document.getElementById('stat-gems');
+      if (gEl && gEl.innerText !== String(AppState.gems)) gEl.innerText = AppState.gems;
+
+      const sndEl = document.getElementById('sound-btn');
+      if (sndEl) sndEl.innerText = AppState.isMuted ? '🔇' : '🔊';
 
       const hintBadge = document.getElementById('hint-ad-badge');
       const hintLabel = document.getElementById('hint-btn-label');
@@ -1136,21 +1154,20 @@
           hintLabel.innerText = '💡 संकेत';
         }
       }
-
-      const achStreak = document.getElementById('achieve-streak');
-      if (achStreak) achStreak.innerText = `${AppState.streak} दिन`;
-      const achStars = document.getElementById('achieve-stars');
-      if (achStars) achStars.innerText = AppState.stars;
-      const achSent = document.getElementById('achieve-sentences');
-      if (achSent) achSent.innerText = AppState.completedSentencesCount;
-      const achGems = document.getElementById('achieve-gems');
-      if (achGems) achGems.innerText = AppState.gems;
     }
 
-    // Interval to refresh hint timer UI every second
+    // Refresh only the hint timer badge safely without re-rendering entire screen
     setInterval(() => {
       if (AppState.activeCategory === 'chips') {
-        updateHeaderStatsDisplay();
+        const hintBadge = document.getElementById('hint-ad-badge');
+        const hintLabel = document.getElementById('hint-btn-label');
+        if (hintBadge && hintLabel && isFreeHintActive()) {
+          const pass = parseInt(localStorage.getItem('bg_free_hint_until') || '0');
+          const secondsLeft = Math.max(0, Math.ceil((pass - Date.now()) / 1000));
+          const min = Math.floor(secondsLeft / 60);
+          const sec = secondsLeft % 60;
+          hintLabel.innerText = `💡 संकेत (${min}:${sec < 10 ? '0' : ''}${sec})`;
+        }
       }
     }, 1000);
 
@@ -1165,13 +1182,12 @@
         saveStats();
       }
       if (AppState.hearts <= 0) {
-        setTimeout(() => openHeartsModal(), 600);
+        setTimeout(() => openHeartsModal(), 400);
         return false;
       }
       return true;
     }
 
-    // SMART HEART BUTTON (0 HEARTS RULE)
     function handleHeaderHeartClick() {
       if (AppState.hearts > 0) {
         AudioFX.pop();
@@ -1205,7 +1221,6 @@
         AppState.hearts = current;
 
         saveStats();
-        updateHeaderStatsDisplay();
         closeHeartsModal();
 
         AudioFX.winFanfare();
@@ -1229,6 +1244,7 @@
       }
     }
 
+    // Audio Engine with Safe Resource Handling
     const AudioFX = {
       ctx: null,
       init() {
@@ -1240,7 +1256,7 @@
           this.ctx.resume();
         }
       },
-      playTone(freq, type = 'sine', duration = 0.12, vol = 0.25) {
+      playTone(freq, type = 'sine', duration = 0.1, vol = 0.2) {
         if (AppState.isMuted) return;
         try {
           this.init();
@@ -1250,36 +1266,55 @@
           osc.type = type;
           osc.frequency.setValueAtTime(freq, this.ctx.currentTime);
           gain.gain.setValueAtTime(vol, this.ctx.currentTime);
-          gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + duration);
+          gain.gain.linearRampToValueAtTime(0.001, this.ctx.currentTime + duration);
           osc.connect(gain);
           gain.connect(this.ctx.destination);
           osc.start();
           osc.stop(this.ctx.currentTime + duration);
         } catch(e) {}
       },
-      pop() { this.playTone(520, 'sine', 0.08, 0.2); },
+      pop() { this.playTone(520, 'sine', 0.06, 0.18); },
       success() {
         if (AppState.isMuted) return;
-        this.playTone(523.25, 'sine', 0.1, 0.25);
-        setTimeout(() => this.playTone(659.25, 'sine', 0.1, 0.25), 90);
-        setTimeout(() => this.playTone(783.99, 'sine', 0.2, 0.25), 180);
+        this.playTone(523, 'sine', 0.08, 0.2);
+        setTimeout(() => this.playTone(659, 'sine', 0.08, 0.2), 80);
+        setTimeout(() => this.playTone(784, 'sine', 0.12, 0.2), 160);
       },
       error() {
         if (AppState.isMuted) return;
-        this.playTone(220, 'sawtooth', 0.15, 0.25);
-        setTimeout(() => this.playTone(180, 'sawtooth', 0.2, 0.25), 110);
+        this.playTone(200, 'triangle', 0.12, 0.2);
       },
       winFanfare() {
         if (AppState.isMuted) return;
         [523, 659, 784, 1046].forEach((f, i) => {
-          setTimeout(() => this.playTone(f, 'triangle', 0.2, 0.25), i * 110);
+          setTimeout(() => this.playTone(f, 'sine', 0.15, 0.2), i * 90);
         });
       }
     };
 
+    // Safe, Memory-Friendly DOM Confetti (Prevents White Screen Crash)
     function triggerConfetti() {
-      if (typeof confetti === 'function') {
-        confetti({ particleCount: 50, spread: 65, origin: { y: 0.6 } });
+      const colors = ['#f43f5e', '#3b82f6', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899'];
+      const count = 28;
+      for (let i = 0; i < count; i++) {
+        const p = document.createElement('div');
+        p.className = 'confetti-particle';
+        p.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+        p.style.left = `${Math.random() * 90 + 5}vw`;
+        p.style.top = `${Math.random() * 20 + 30}vh`;
+
+        const tx = (Math.random() - 0.5) * 160;
+        const ty = Math.random() * 180 + 80;
+        const rot = Math.random() * 720 - 360;
+
+        p.style.setProperty('--tx', `${tx}px`);
+        p.style.setProperty('--ty', `${ty}px`);
+        p.style.setProperty('--rot', `${rot}deg`);
+
+        document.body.appendChild(p);
+        setTimeout(() => {
+          if (p.parentNode) p.parentNode.removeChild(p);
+        }, 1300);
       }
     }
 
@@ -1329,7 +1364,7 @@
         { char: 'य', word: 'यज्ञ', en: 'Yagya', icon: '🔥' },
         { char: 'र', word: 'रथ', en: 'Chariot', icon: '🎠' },
         { char: 'ल', word: 'लट्टू', en: 'Top', icon: '🪀' },
-        { char: 'व', word: 'वक', en: 'Crane', icon: '🦤' },
+        { char: 'व', word: 'वक', en: 'Crane', icon: '𦤤' },
         { char: 'श', word: 'शलजम', en: 'Turnip', icon: '🧅' },
         { char: 'ष', word: 'षट्कोण', en: 'Hexagon', icon: '⬡' },
         { char: 'स', word: 'सेब', en: 'Apple', icon: '🍎' },
@@ -2026,15 +2061,11 @@
       renderTrayAndSourcePool();
     }
 
-    // =========================================================================
-    // 100% BULLETPROOF AUTO-SELECT HINT LOGIC (PROVEN WORKING)
-    // =========================================================================
     function applyHintLogic() {
       if (!AppState.currentChipItem || AppState.chipAnswered) return;
 
       const expected = AppState.currentChipItem.chips;
 
-      // 1. यदि यूजर ने पहले से कुछ गलत चिप्स लगा दिए हैं, तो गलत वाले हटाकर सही प्रिफिक्स रखें
       let validCount = 0;
       for (let i = 0; i < AppState.assembledChips.length; i++) {
         if (i < expected.length && cleanToken(AppState.assembledChips[i]) === cleanToken(expected[i])) {
@@ -2045,7 +2076,6 @@
       }
       AppState.assembledChips = AppState.assembledChips.slice(0, validCount);
 
-      // 2. अगला सही चिप ढूँढकर ट्रे में लगाएँ
       if (validCount < expected.length) {
         const nextCorrectChip = expected[validCount];
         AppState.assembledChips.push(nextCorrectChip);
@@ -2056,7 +2086,6 @@
         resetChipActionButton();
         renderTrayAndSourcePool();
 
-        // यदि सारे चिप्स पूरे हो चुके हैं, तो बटन पर चमक दिखाएँ
         if (AppState.assembledChips.length === expected.length) {
           const btn = document.getElementById('btn-chip-main-action');
           if (btn) btn.classList.add('pulse-next');
@@ -2076,13 +2105,11 @@
         return;
       }
 
-      // Check strictly if 5-minute Free Pass is currently active
       if (isFreeHintActive()) {
         applyHintLogic();
         return;
       }
 
-      // If pass expired, show exactly 1 Rewarded Ad, then activate 5-min pass and auto-select
       const hintLabel = document.getElementById('hint-btn-label');
       if (hintLabel) hintLabel.innerText = "लोडिंग...";
 
