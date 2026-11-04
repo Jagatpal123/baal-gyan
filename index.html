@@ -458,9 +458,12 @@
           </div>
           <span id="chip-progress-text" class="text-xs font-black text-emerald-600">1 / 15</span>
         </div>
-        <button onclick="skipCurrentChipItem()" class="btn-3d bg-slate-100 border border-slate-300 text-slate-700 px-2.5 py-1 rounded-lg text-xs font-black">
-          🔄 अगला
-        </button>
+        <div class="flex items-center gap-1.5">
+          <span id="chip-challenge-title" class="text-[11px] font-black text-emerald-800 hidden sm:inline-block">वाक्य चिप्स</span>
+          <button onclick="skipCurrentChipItem()" class="btn-3d bg-slate-100 border border-slate-300 text-slate-700 px-2.5 py-1 rounded-lg text-xs font-black">
+            🔄 अगला
+          </button>
+        </div>
       </div>
 
       <!-- Main Game Card -->
@@ -892,7 +895,6 @@
         if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.AdMob) {
           try {
             const { AdMob, BannerAdPosition, BannerAdSize } = window.Capacitor.Plugins;
-            // Native AdMob Banner Margin: sits right above bottom nav bar
             await AdMob.showBanner({
               adId: AdConfig.bannerId,
               adSize: BannerAdSize ? BannerAdSize.BANNER : 'BANNER',
@@ -2010,6 +2012,7 @@
       }
     }
 
+    /* ================= FIXED & STABILIZED CHIPS FUNCTION ================= */
     function loadCurrentChipChallenge() {
       initChipQueues();
       AppState.chipAnswered = false;
@@ -2021,6 +2024,11 @@
       let totalBankCount = 0;
       let solvedCount = 0;
 
+      const titleEl = document.getElementById('chip-challenge-title');
+      const badgeEl = document.getElementById('chip-instruction-badge');
+      const promptEl = document.getElementById('chip-prompt-text');
+      const hintEl = document.getElementById('chip-sub-hint');
+
       if (AppState.chipMode === 'sentence') {
         if (AppState.sentenceIndex >= AppState.sentenceQueue.length) {
           AppState.sentenceQueue = shuffleArray(DataStore.sentencesBank);
@@ -2030,10 +2038,10 @@
         totalBankCount = DataStore.sentencesBank.length;
         solvedCount = AppState.completedSentencesCount;
 
-        document.getElementById('chip-challenge-title').innerText = "वाक्य निर्माण चिप्स (No-Repeat)";
-        document.getElementById('chip-instruction-badge').innerText = "सही क्रम में जोड़ें:";
-        document.getElementById('chip-prompt-text').innerText = currentItem.hi;
-        document.getElementById('chip-sub-hint').innerText = currentItem.en;
+        if (titleEl) titleEl.innerText = "वाक्य निर्माण चिप्स (No-Repeat)";
+        if (badgeEl) badgeEl.innerText = "सही क्रम में जोड़ें:";
+        if (promptEl) promptEl.innerText = currentItem.hi;
+        if (hintEl) hintEl.innerText = currentItem.en;
       } else {
         if (AppState.wordIndex >= AppState.wordQueue.length) {
           AppState.wordQueue = shuffleArray(DataStore.wordsBank);
@@ -2043,18 +2051,20 @@
         totalBankCount = DataStore.wordsBank.length;
         solvedCount = AppState.completedWordsCount;
 
-        document.getElementById('chip-challenge-title').innerText = "शब्द निर्माण चिप्स (No-Repeat)";
-        document.getElementById('chip-instruction-badge').innerText = "वर्ण जोड़कर शब्द बनाएं:";
-        document.getElementById('chip-prompt-text').innerText = `${currentItem.hint} ➔ [ ? ]`;
-        document.getElementById('chip-sub-hint').innerText = `संकेत: ${currentItem.lang === 'hi' ? 'हिंदी' : 'English'} शब्द`;
+        if (titleEl) titleEl.innerText = "शब्द निर्माण चिप्स (No-Repeat)";
+        if (badgeEl) badgeEl.innerText = "वर्ण जोड़कर शब्द बनाएं:";
+        if (promptEl) promptEl.innerText = `${currentItem.hint} ➔ [ ? ]`;
+        if (hintEl) hintEl.innerText = `संकेत: ${currentItem.lang === 'hi' ? 'हिंदी' : 'English'} शब्द`;
       }
 
       AppState.currentChipItem = currentItem;
       AppState.scrambledSourceChips = jumbleChipsArray(currentItem.chips);
 
       const progressPercent = Math.min(100, Math.round((solvedCount / totalBankCount) * 100));
-      document.getElementById('chip-progress-fill').style.width = `${Math.max(5, progressPercent)}%`;
-      document.getElementById('chip-progress-text').innerText = `${solvedCount} / ${totalBankCount}`;
+      const progFill = document.getElementById('chip-progress-fill');
+      const progText = document.getElementById('chip-progress-text');
+      if (progFill) progFill.style.width = `${Math.max(5, progressPercent)}%`;
+      if (progText) progText.innerText = `${solvedCount} / ${totalBankCount}`;
 
       renderTrayAndSourcePool();
       updateHeaderStatsDisplay();
@@ -2063,6 +2073,8 @@
     function renderTrayAndSourcePool() {
       const tray = document.getElementById('chip-target-tray');
       const pool = document.getElementById('chip-source-pool');
+      if (!tray || !pool) return;
+
       tray.innerHTML = '';
       pool.innerHTML = '';
 
@@ -2084,7 +2096,7 @@
         });
       }
 
-      const targetList = [...AppState.currentChipItem.chips];
+      const targetList = [...(AppState.currentChipItem ? AppState.currentChipItem.chips : [])];
       const countsInTray = {};
       AppState.assembledChips.forEach(c => countsInTray[c] = (countsInTray[c] || 0) + 1);
 
@@ -2104,7 +2116,7 @@
             AudioFX.pop();
             highlightSpeakingElement(chipBtn, 500);
             AppState.assembledChips.push(chipVal);
-            speakText(chipVal, AppState.currentChipItem.lang === 'en' ? 'en-US' : 'hi-IN');
+            speakText(chipVal, AppState.currentChipItem && AppState.currentChipItem.lang === 'en' ? 'en-US' : 'hi-IN');
             resetChipActionButton();
             renderTrayAndSourcePool();
           };
