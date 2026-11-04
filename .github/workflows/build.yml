@@ -4,8 +4,8 @@ name: Build Test APK and Production AAB
 # YAHAN SE AAP SIRF VERSION BADAL SAKTE HAIN:
 # ==========================================
 env:
-  APP_VERSION_CODE: 3
-  APP_VERSION_NAME: "3.0.0"
+  APP_VERSION_CODE: 4
+  APP_VERSION_NAME: "1.0.4"
 
 on:
   push:
