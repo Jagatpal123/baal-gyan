@@ -15,7 +15,7 @@
     :root {
       --safe-top: env(safe-area-inset-top, 24px);
       --safe-bottom: env(safe-area-inset-bottom, 16px);
-      --nav-total-height: calc(58px + var(--safe-bottom));
+      --nav-total-height: calc(64px + var(--safe-bottom));
     }
 
     * {
@@ -325,8 +325,8 @@
     </div>
   </div>
 
-  <!-- ================= MAIN VIEWPORT ================= -->
-  <main class="flex-1 w-full max-w-lg mx-auto p-2.5 flex flex-col pb-36">
+  <!-- ================= MAIN VIEWPORT (SAFE BOTTOM FOR AD + NAV) ================= -->
+  <main class="flex-1 w-full max-w-lg mx-auto p-2.5 flex flex-col pb-44">
 
     <!-- VIEW 0: HOME CATEGORY HUB -->
     <section id="view-home" class="tab-view flex flex-col gap-2.5">
@@ -698,7 +698,7 @@
       <div id="listen-options-grid" class="grid grid-cols-2 gap-2.5 pt-1"></div>
 
       <!-- Confirmation Banner -->
-      <div id="listen-confirm-banner" class="hidden fixed bottom-28 left-0 right-0 max-w-lg mx-auto p-3 z-50">
+      <div id="listen-confirm-banner" class="hidden fixed bottom-32 left-0 right-0 max-w-lg mx-auto p-3 z-50">
         <div id="listen-banner-card" class="rounded-2xl border-4 border-emerald-400 p-3 shadow-2xl flex items-center justify-between bg-emerald-50">
           <div class="flex items-center gap-2.5">
             <div id="listen-banner-icon" class="w-10 h-10 rounded-2xl bg-emerald-500 text-white flex items-center justify-center text-xl font-black shadow-md flex-shrink-0">
@@ -838,7 +838,7 @@
 
   </main>
 
-  <!-- ================= BOTTOM NAVIGATION BAR ================= -->
+  <!-- ================= BOTTOM NAVIGATION BAR (FIXED DEDICATED LAYER) ================= -->
   <nav class="fixed bottom-0 left-0 right-0 z-40 bg-white border-t-4 border-amber-200 px-3 py-1.5 shadow-2xl max-w-lg mx-auto flex-shrink-0" style="padding-bottom: calc(var(--safe-bottom) + 6px);">
     <div class="grid grid-cols-4 gap-1 text-center">
       <button onclick="goToHomeScreen()" id="nav-btn-home" class="nav-tab-btn flex flex-col items-center py-1 text-emerald-600">
@@ -866,8 +866,9 @@
   <!-- ================= ADMOB ENGINE ================= -->
   <script>
     const AdConfig = {
-      bannerId: 'ca-app-pub-6302105448775587/9146645040',
-      rewardedId: 'ca-app-pub-6302105448775587/2277984366',
+      // Verified Ad Units replaced
+      bannerId: 'ca-app-pub-6302105448775587/3062308761',
+      rewardedId: 'ca-app-pub-6302105448775587/6211216281',
       bannerVisible: false,
       isRewardedLoaded: false
     };
@@ -897,12 +898,12 @@
         if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.AdMob) {
           try {
             const { AdMob, BannerAdPosition, BannerAdSize } = window.Capacitor.Plugins;
-            // Native AdMob Banner Margin: 72dp keeps banner clearly above bottom navigation
+            // Native AdMob Banner Margin: 80dp ensures the ad sits completely clear of bottom navigation
             await AdMob.showBanner({
               adId: AdConfig.bannerId,
               adSize: BannerAdSize ? BannerAdSize.BANNER : 'BANNER',
               position: BannerAdPosition ? BannerAdPosition.BOTTOM_CENTER : 'BOTTOM_CENTER',
-              margin: 72,
+              margin: 80,
               isTesting: false,
               tagForChildDirectedTreatment: true,
               maxAdContentRating: 'G'
@@ -1122,7 +1123,6 @@
       activeListenQuestion: null,
       listenAnswered: false,
 
-      // Default direction: Hindi to English
       translateDirection: 'hi-to-en',
       activeRecognition: null
     };
@@ -2019,6 +2019,7 @@
       }
     }
 
+    /* ================= FIXED & STABILIZED CHIPS FUNCTION ================= */
     function loadCurrentChipChallenge() {
       initChipQueues();
       AppState.chipAnswered = false;
