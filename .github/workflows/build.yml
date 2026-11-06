@@ -4,8 +4,8 @@ name: Build Test APK and Production AAB
 # YAHAN SE AAP SIRF VERSION BADAL SAKTE HAIN:
 # ==========================================
 env:
-  APP_VERSION_CODE: 4
-  APP_VERSION_NAME: "1.0.4"
+  APP_VERSION_CODE: 5
+  APP_VERSION_NAME: "1.0.5"
 
 on:
   push:
@@ -72,9 +72,11 @@ jobs:
           sed -i '/<manifest/a \    <uses-permission android:name="android.permission.INTERNET" />\n    <uses-permission android:name="android.permission.RECORD_AUDIO" />\n    <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />' android/app/src/main/AndroidManifest.xml
         fi
 
-        # 5. AdMob App ID
-        if ! grep -q "APPLICATION_ID" android/app/src/main/AndroidManifest.xml; then
-          sed -i '/<\/application>/i \        <meta-data android:name="com.google.android.gms.ads.APPLICATION_ID" android:value="ca-app-pub-6302105448775587~3000039098"\/>' android/app/src/main/AndroidManifest.xml
+        # 5. AdMob App ID (Updated Verified ID)
+        if grep -q "APPLICATION_ID" android/app/src/main/AndroidManifest.xml; then
+          sed -i 's/android:value="ca-app-pub-[^"]*"/android:value="ca-app-pub-6302105448775587~6837159989"/' android/app/src/main/AndroidManifest.xml
+        else
+          sed -i '/<\/application>/i \        <meta-data android:name="com.google.android.gms.ads.APPLICATION_ID" android:value="ca-app-pub-6302105448775587~6837159989"\/>' android/app/src/main/AndroidManifest.xml
         fi
 
         # 6. Locate MainActivity.java and inject TTS & Permissions
@@ -164,9 +166,9 @@ jobs:
           TARGET_HTML=$(find android/app/src/main/assets -name "index.html" | head -n 1)
         fi
 
-        # Replace with Google Official Test IDs
-        sed -i 's/ca-app-pub-6302105448775587\/9146645040/ca-app-pub-3940256099942544\/6300978111/g' "$TARGET_HTML"
-        sed -i 's/ca-app-pub-6302105448775587\/2277984366/ca-app-pub-3940256099942544\/5224354917/g' "$TARGET_HTML"
+        # Replace Verified IDs with Google Official Test IDs for testing APK
+        sed -i 's/ca-app-pub-6302105448775587\/3062308761/ca-app-pub-3940256099942544\/6300978111/g' "$TARGET_HTML"
+        sed -i 's/ca-app-pub-6302105448775587\/6211216281/ca-app-pub-3940256099942544\/5224354917/g' "$TARGET_HTML"
         sed -i 's/isTesting: false/isTesting: true/g' "$TARGET_HTML"
 
         cd android
@@ -187,9 +189,9 @@ jobs:
           TARGET_HTML=$(find android/app/src/main/assets -name "index.html" | head -n 1)
         fi
 
-        # Revert to Real AdMob Production IDs
-        sed -i 's/ca-app-pub-3940256099942544\/6300978111/ca-app-pub-6302105448775587\/9146645040/g' "$TARGET_HTML"
-        sed -i 's/ca-app-pub-3940256099942544\/5224354917/ca-app-pub-6302105448775587\/2277984366/g' "$TARGET_HTML"
+        # Revert back to Real Verified AdMob Production IDs
+        sed -i 's/ca-app-pub-3940256099942544\/6300978111/ca-app-pub-6302105448775587\/3062308761/g' "$TARGET_HTML"
+        sed -i 's/ca-app-pub-3940256099942544\/5224354917/ca-app-pub-6302105448775587\/6211216281/g' "$TARGET_HTML"
         sed -i 's/isTesting: true/isTesting: false/g' "$TARGET_HTML"
 
         cd android
